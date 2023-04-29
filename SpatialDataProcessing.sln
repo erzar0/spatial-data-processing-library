@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SpatialDataProcessing", "ProjektBD2\SpatialDataProcessing.sqlproj", "{3A5E38F1-C9B3-4D1F-9B30-9B3E9D2DDB71}"
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SpatialDataProcessing", "SpatialDataProcessing\SpatialDataProcessing.sqlproj", "{3A5E38F1-C9B3-4D1F-9B30-9B3E9D2DDB71}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
