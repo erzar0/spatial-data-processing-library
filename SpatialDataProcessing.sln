@@ -5,6 +5,8 @@ VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SpatialDataProcessing", "SpatialDataProcessing\SpatialDataProcessing.sqlproj", "{3A5E38F1-C9B3-4D1F-9B30-9B3E9D2DDB71}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSpatialDataProcessing", "TestSpatialDataProcessing\TestSpatialDataProcessing.csproj", "{B7F77583-8587-41B3-8D39-712E919C2A0F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,6 +19,10 @@ Global
 		{3A5E38F1-C9B3-4D1F-9B30-9B3E9D2DDB71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A5E38F1-C9B3-4D1F-9B30-9B3E9D2DDB71}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3A5E38F1-C9B3-4D1F-9B30-9B3E9D2DDB71}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{B7F77583-8587-41B3-8D39-712E919C2A0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7F77583-8587-41B3-8D39-712E919C2A0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7F77583-8587-41B3-8D39-712E919C2A0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7F77583-8587-41B3-8D39-712E919C2A0F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

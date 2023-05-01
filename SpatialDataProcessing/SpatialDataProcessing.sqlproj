@@ -65,6 +65,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="UDT.cs" />
+    <Compile Include="Point.cs" />
+    <Compile Include="Line.cs" />
+    <Compile Include="Polygon.cs" />
   </ItemGroup>
 </Project>
