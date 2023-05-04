@@ -1,10 +1,7 @@
 using System;
-using System.ComponentModel;
-using System.Data;
-using System.Data.SqlClient;
 using System.Data.SqlTypes;
+using System.Globalization;
 using System.IO;
-using System.Runtime.InteropServices;
 using Microsoft.SqlServer.Server;
 
 
@@ -26,16 +23,17 @@ public struct Point : INullable, IBinarySerialize
         if (s.IsNull || s.ToString().Trim() == "") { return Null; }
 
         string[] xy = System.Text.RegularExpressions.Regex.Split(
-                    s.ToString().Trim('(', ')', ' '), @"\s+");
-        double x = double.Parse(xy[0].Trim(' '));
-        double y = double.Parse(xy[1].Trim(' '));
+                    s.ToString()
+                    .Trim('(', ')', ' '), @"\s+");
+        double x = double.Parse(xy[0].Trim(' '), CultureInfo.InvariantCulture);
+        double y = double.Parse(xy[1].Trim(' '), CultureInfo.InvariantCulture);
         return new Point(x, y);
     }
     public override string ToString()
     {
-        if (this.IsNull) { return "NULL"; }
+        if (IsNull) { return "NULL"; }
 
-        return $"({_x} {_y})";
+        return $"({_x.ToString().Replace(",", ".")} {_y.ToString().Replace(",", ".")})";
     }
 
     public static Point Null
@@ -66,13 +64,14 @@ public struct Point : INullable, IBinarySerialize
 
     public SqlDouble DistanceTo(Point p2)
     {
-        if (this.IsNull || p2.IsNull)
+        if (IsNull || p2.IsNull)
         {
             return SqlDouble.Null;
         }
 
         return Math.Sqrt(Math.Pow((double)(X - p2.X), 2) + Math.Pow((double)(Y - p2.Y), 2));
     }
+
 
     public void Write(BinaryWriter w)
     {

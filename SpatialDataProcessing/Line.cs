@@ -1,10 +1,5 @@
 using System;
-using System.ComponentModel.Design;
-using System.Data;
-using System.Data.SqlClient;
 using System.Data.SqlTypes;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Microsoft.SqlServer.Server;
 
 
@@ -76,9 +71,56 @@ public struct Line : INullable
     {
         if (IsNull) { return SqlBoolean.False; }
 
+        if (A.X > B.X)
+        {
+            if(point.X > A.X)
+            {
+                return false;
+            }
+            else if (point.X < B.X)
+            {
+                return false; 
+            }
+        }
+        else
+        {
+            if(point.X > B.X)
+            {
+                return false;
+            }
+            else if (point.X < A.X)
+            {
+                return false; 
+            }
+
+        }
+
         SqlDouble m = GetSlopeValue();
         SqlDouble c = GetInterceptValue();
-        return ((point.Y - (m * point.X + c)) < eps);
+        return ((point.Y - (m * point.X + c)) <= eps);
+    }
+
+    public SqlBoolean CrossesLine(Line another)
+    {
+        if (IsNull || another.IsNull)
+        {
+            return SqlBoolean.False;
+        }
+        double m1 = (double) GetSlopeValue();
+        double c1 = (double) GetInterceptValue();
+        double m2 = (double) another.GetSlopeValue();
+        double c2 = (double) another.GetInterceptValue();
+        
+        double x = (c2-c1)/(m1-m2);
+        double y = m1 * x + c1;
+        Point intersectionPoint = new Point(x, y);
+
+        if(ContainsPoint(intersectionPoint, 1e-12) && another.ContainsPoint(intersectionPoint, 1e-12))
+        {
+            return SqlBoolean.True;
+        }
+
+        return SqlBoolean.False;
     }
 
     private SqlDouble GetSlopeValue()

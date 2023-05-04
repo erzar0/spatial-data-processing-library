@@ -1,11 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Data;
-using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.SqlServer.Server;
@@ -49,7 +44,7 @@ public struct Polygon : INullable, IBinarySerialize
         sb.Append("(");
         foreach (Point p in _points)
         {
-            sb.Append($"{p},");
+            sb.Append($"{p.ToString()},");
         }
         sb.Remove(sb.Length - 1, 1);
         sb.Append(")");
@@ -70,6 +65,8 @@ public struct Polygon : INullable, IBinarySerialize
     {
         get { return _isNull; }
     }
+    
+    public Point[] Points { get { return _points; } }
 
     public SqlDouble Circumference()
     {
@@ -85,8 +82,30 @@ public struct Polygon : INullable, IBinarySerialize
             circumference += _points[i].DistanceTo(_points[i - 1]);
         }
         circumference += _points[i-1].DistanceTo(_points[0]);
-
         return circumference;
+    }
+
+    public SqlDouble Area()
+    {
+        //Works only for simple polygons
+        //https://www.mathopenref.com/coordpolygonarea2.html
+
+        if (IsNull) { return SqlDouble.Null; }
+
+        double area = 0;
+        double partial;
+        int i = 1;
+        for(; i<_points.Length; i++)
+        {
+            Point a = _points[i - 1];
+            Point b = _points[i];
+            partial = (double) ((a.X + b.X) * (a.Y - b.Y));
+            Console.WriteLine(partial);
+            area += partial;
+        }
+        partial = (double) ((_points[i-1].X - _points[0].X) * (_points[i-1].Y - _points[0].Y));
+        Console.Write(partial);
+        return area/2;
     }
 
     public SqlBoolean ContainsPoint(Point point, SqlDouble eps)
