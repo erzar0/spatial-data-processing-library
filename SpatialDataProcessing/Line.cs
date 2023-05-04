@@ -1,5 +1,10 @@
 using System;
+using System.ComponentModel.Design;
+using System.Data;
+using System.Data.SqlClient;
 using System.Data.SqlTypes;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.SqlServer.Server;
 
 

@@ -1,6 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.Design;
+using System.Data;
+using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.SqlServer.Server;
@@ -65,7 +70,7 @@ public struct Polygon : INullable, IBinarySerialize
     {
         get { return _isNull; }
     }
-    
+
     public Point[] Points { get { return _points; } }
 
     public SqlDouble Circumference()
