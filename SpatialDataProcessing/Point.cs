@@ -20,6 +20,13 @@ public struct Point : INullable, IBinarySerialize
         _isNull = false;
     }
 
+    public Point(Point another)
+    {
+        _x = (double) another.X;
+        _y = (double) another.Y;
+        _isNull = another.IsNull;
+
+    }
 
     [SqlMethod(OnNullCall = false)]
     public static Point Parse(SqlString s)
@@ -27,8 +34,7 @@ public struct Point : INullable, IBinarySerialize
         if (s.IsNull || s.ToString().Trim() == "") { return Null; }
 
         string[] xy = System.Text.RegularExpressions.Regex.Split(
-                    s.ToString()
-                    .Trim('(', ')', ' '), @"\s+");
+                        s.ToString().Trim('(', ')', ' '), @"\s+");
         double x = double.Parse(xy[0].Trim(' '), CultureInfo.InvariantCulture);
         double y = double.Parse(xy[1].Trim(' '), CultureInfo.InvariantCulture);
         return new Point(x, y);
@@ -65,6 +71,14 @@ public struct Point : INullable, IBinarySerialize
         get { return _y; }
         set { _y = (double) value; }
     }
+    public static Point operator +(Point p) => new Point(p);
+    public static Point operator -(Point p) => new Point(-p.X, -p.Y);
+
+    public static Point operator +(Point p, Point another)
+        => new Point(p.X + another.X, p.Y + another.Y);
+
+    public static Point operator -(Point p, Point another)
+        => p + (-another);
 
     public SqlDouble DistanceTo(Point p2)
     {
@@ -74,6 +88,13 @@ public struct Point : INullable, IBinarySerialize
         }
 
         return Math.Sqrt(Math.Pow((double)(X - p2.X), 2) + Math.Pow((double)(Y - p2.Y), 2));
+    }
+
+    public double PolarAngle()
+    {
+        if (IsNull) { return 0; }
+
+        return Math.Atan2(_y, _x);
     }
 
 

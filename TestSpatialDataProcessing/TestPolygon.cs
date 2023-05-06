@@ -138,5 +138,34 @@ namespace TestSpatialDataProcessing {
             Assert.AreEqual(polygon.Area(), SqlDouble.Null);
         }
 
+        [TestMethod]
+        public void Polygon_ParseEdges_InvalidInput()
+        {
+            Point[] ps =
+            {
+                new Point(0, 0),
+            };
+            CollectionAssert.AreEqual(Polygon.ParsedEdges(ps), null);
+            CollectionAssert.AreEqual(Polygon.ParsedEdges(null), null);
+
+        }
+
+        [TestMethod]
+        public void Polygon_ParseEdges_ValidInput()
+        {
+            Point[] ps =
+            {
+                new Point(0, 0),
+                new Point(0, 1),
+                new Point(1, 1)
+            };
+            List<Line> edges = new List<Line>() {
+                new Line(ps[0], ps[1]),
+                new Line(ps[1], ps[2]),
+                new Line(ps[2], ps[0])
+            };
+            CollectionAssert.AreEqual(Polygon.ParsedEdges(ps), edges);
+        }
+
     } 
 }

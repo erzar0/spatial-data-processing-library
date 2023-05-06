@@ -30,7 +30,7 @@ public struct Polygon : INullable, IBinarySerialize
     [SqlMethod(OnNullCall = false)]
     public static Polygon Parse(SqlString s)
     {
-        if (s.IsNull || s.ToString().Trim() == "") { return Polygon.Null; }
+        if (s.IsNull || s.ToString().Trim() == "") { return Null; }
 
         string[] points = System.Text.RegularExpressions.Regex.Split(
                         s.ToString().Trim('(', ')', ' '), @"\s*,\s*");
@@ -92,7 +92,7 @@ public struct Polygon : INullable, IBinarySerialize
 
     public SqlDouble Area()
     {
-        //Works only for simple polygons
+        //Works only for non self-crossing polygons
         //https://www.mathopenref.com/coordpolygonarea2.html
 
         if (IsNull) { return SqlDouble.Null; }
@@ -113,13 +113,50 @@ public struct Polygon : INullable, IBinarySerialize
         return area/2;
     }
 
-    public SqlBoolean ContainsPoint(Point point, SqlDouble eps)
+
+    public SqlBoolean ContainsPoint(Point point)
     {
-        //if (this.IsNull) { return SqlBoolean.False; }
-        //double m = getSlopeValue();
-        //double c = getInterceptValue();
-        //return ((point.Y - (m * point.X + c)) < eps);
-        return true;
+        int intersectionCount = 0;
+
+        for(int i = 0; i<_points.Length; i++)
+        {
+            Point p1 = _points[i];
+            Point p2 = _points[(i+1) % _points.Length];
+
+            if(point.Y > Math.Min((double) p1.Y, (double) p2.Y)
+            && point.Y <= Math.Max((double) p1.Y, (double) p2.Y)
+            && point.X <= Math.Max((double) p1.X, (double) p2.X)
+            && p1.Y != p2.Y)
+            {
+                double slope = (double) ((p2.Y - p1.Y) / (p2.X - p1.X));
+                if(p1.X == p2.X )
+                {
+                    intersectionCount++;
+                    continue;
+                }
+
+                double xIntersection = (double)((point.Y - p1.Y) * slope + p1.X);  
+                if(point.X < xIntersection)
+                {
+                    intersectionCount++;
+                }
+            }
+        }
+        return intersectionCount % 2 == 1;
+    }
+
+    public static List<Line> ParsedEdges(Point[] points)
+    {
+        if(points == null || points.Length < 2 ) { return null; }
+
+        int i = 1;
+        List<Line> result = new List<Line>();
+        for(; i<points.Length; i++)
+        {
+            result.Add(new Line(points[i - 1], points[i]));
+        }
+        result.Add((new Line(points[i - 1], points[0])));
+        return result;
     }
 
     public void Read(BinaryReader reader)
