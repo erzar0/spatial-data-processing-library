@@ -6,7 +6,7 @@ namespace TestSpatialDataProcessing
     public class TestPointSet
     {
         [TestMethod]
-        public void PointSet_Constructor_ValidInput()
+        public void  Constructor_ValidInput_ReturnsValidObject()
         {
             var points = new Point[]
             {
@@ -23,7 +23,7 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void PointSet_Constructor_NullInput()
+        public void  Constructor_NullInput_ReturnsNullObject()
         {
             var points = new Point[] { };
 
@@ -32,7 +32,7 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void PointSet_Parse_ValidInput()
+        public void  Parse_ValidInput_ReturnsValidObject()
         {
             var expectedPoints = new Point[]
             {
@@ -50,7 +50,7 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void PointSet_Parse_NullInput()
+        public void  Parse_NullInput_ReturnsNullObject()
         {
             var input = SqlString.Null;
 
@@ -60,7 +60,7 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void PointSet_ToString_ValidInput()
+        public void  ToString_ValidInput_ReturnsValidString()
         {
             var points = new Point[]
             {
@@ -78,7 +78,7 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void PointSet_ToString_NullInput()
+        public void  ToString_NullInput_ReturnsNullString()
         {
             var pointSet = PointSet.Null;
 
@@ -88,13 +88,13 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void PointSet_FindConvexHull_NullInput()
+        public void  FindConvexHull_NullInput_ReturnsNullPolygon()
         {
             Assert.AreEqual(new PointSet(null).FindConvexHull(), Polygon.Null);
         }
 
         [TestMethod]
-        public void PointSet_FindConvexHull_ValidInput()
+        public void  FindConvexHull_ValidInput_ReturnsValidPolygon()
         {
             Point[] convexHullPoints = {
                 new Point(-10, -10),

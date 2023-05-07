@@ -5,7 +5,7 @@ namespace TestSpatialDataProcessing
     [TestClass]
     public class TestPoint {
         [TestMethod]
-        public void Point_Constructor_ValidInput()
+        public void  Constructor_ValidInput_ReturnsValidObject()
         {
             var point = new Point(new SqlDouble(1.0), new SqlDouble(2.0));
             Assert.AreEqual(1.0, point.X.Value);
@@ -13,7 +13,7 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void Point_Parse_ValidInput()
+        public void  Parse_ValidInput_ReturnsValidObject()
         {
             var point = Point.Parse(new SqlString("(5.432 2.345)"));
             Assert.AreEqual(5.432, point.X.Value);
@@ -21,14 +21,14 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void Point_ToString_ValidInput()
+        public void  ToString_ValidInput_ReturnsValidString()
         {
             var point = new Point(new SqlDouble(1.234), new SqlDouble(4.321));
             Assert.AreEqual("(1.234 4.321)", point.ToString());
         }
 
         [TestMethod]
-        public void Point_IsNull_NullInput()
+        public void  IsNull_NullInput_ReturnsExpectedValue()
         {
             var nullPoint = Point.Null;
             Assert.IsTrue(nullPoint.IsNull);
@@ -38,7 +38,7 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void Point_DistanceTo_ValidInput()
+        public void  DistanceTo_ValidInput_ReturnsValidValue()
         {
             var point1 = new Point(new SqlDouble(0.0), new SqlDouble(0.0));
             var point2 = new Point(new SqlDouble(3.0), new SqlDouble(4.0));
@@ -47,7 +47,7 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void Point_WriteAndRead_ValidInput()
+        public void  WriteAndRead_ValidInput_WorksCorrectly()
         {
             var point = new Point(new SqlDouble(1.0), new SqlDouble(2.0));
             using (var stream = new MemoryStream())
@@ -67,5 +67,6 @@ namespace TestSpatialDataProcessing
             }
       
         }   
+
     }
 }

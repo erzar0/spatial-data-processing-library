@@ -25,7 +25,7 @@ public struct Line : INullable
         if (s.IsNull || s.ToString().Trim() == "") { return Null; }
 
         string[] points = System.Text.RegularExpressions.Regex.Split(
-                        s.ToString().Trim('(', ')', ' '), @"\s*,\s*");
+                        s.ToString().Replace('\n', ' ').Trim('(', ')', ' '), @"\s*,\s*");
         Point a = Point.Parse(points[0]);
         Point b = Point.Parse(points[1]);
         return new Line(a, b);
@@ -76,33 +76,18 @@ public struct Line : INullable
     {
         if (IsNull) { return SqlBoolean.False; }
 
-        if (A.X > B.X)
+        if (point.X > Math.Max((double) _a.X, (double) _b.X)
+        ||point.X < Math.Min((double) _a.X, (double) _b.X) 
+        ||point.Y > Math.Max((double) _a.Y, (double) _b.Y)
+        ||point.Y < Math.Min((double) _a.Y, (double) _b.Y))
         {
-            if(point.X > A.X)
-            {
-                return false;
-            }
-            else if (point.X < B.X)
-            {
-                return false; 
-            }
-        }
-        else
-        {
-            if(point.X > B.X)
-            {
-                return false;
-            }
-            else if (point.X < A.X)
-            {
-                return false; 
-            }
-
+            return false;
         }
 
         SqlDouble m = GetSlopeValue();
         SqlDouble c = GetInterceptValue();
-        return ((point.Y - (m * point.X + c)) <= eps);
+        double distance = Math.Abs((double) (point.Y - (m * point.X + c)));
+        return distance <= (double) eps;
     }
 
     public SqlBoolean CrossesLine(Line another)

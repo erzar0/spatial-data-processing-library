@@ -8,71 +8,64 @@ namespace TestSpatialDataProcessing
     public class LineTests
     {
         [TestMethod]
-        public void Line_Parse_ValidInput()
+        public void   Parse_ValidInput_ReturnsValidObject()
         {
-            var line = Line.Parse(new SqlString("((1 2),(3 4))"));
+            var line = Line.Parse(new SqlString(@" ( ( 1 2 )
+                                                , ( 3 4 )   )"));
             Assert.AreEqual(line.A, new Point(1, 2));
             Assert.AreEqual(line.B, new Point(3, 4));
         }
 
         [TestMethod]
-        public void Line_Parse_NullInput()
+        public void   Parse_NullInput_ReturnsNullObject()
         {
             var line = Line.Parse(SqlString.Null);
             Assert.AreEqual(line.IsNull, true);
         }
 
         [TestMethod]
-        public void Line_ToString_NullInput()
+        public void   ToString_NullInput_ReturnsNullString()
         {
             var line = Line.Null;
             Assert.AreEqual(line.ToString(), "NULL");
         }
 
         [TestMethod]
-        public void Line_Length_NullInput()
+        public void   Length_NullObject_ReturnsNullValue()
         {
             var line = Line.Null;
             Assert.AreEqual(line.Length().IsNull, true);
         }
 
         [TestMethod]
-        public void Line_Length_ValidInput()
+        public void   Length_ValidInput_ReturnsValidValue()
         {
             var line = new Line(new Point(0, 0), new Point(3, 4));
             Assert.AreEqual(line.Length().Value, 5.0);
         }
 
         [TestMethod]
-        public void Line_ContainsPoint_NullInput()
+        public void   ContainsPoint_NullObject_ReturnsFalse()
         {
             var line = Line.Null;
             Assert.AreEqual(line.ContainsPoint(new Point(1, 2), 0.01), false);
         }
 
         [TestMethod]
-        public void Line_ContainsPoint_ValidInput()
+        [DataRow(1, 1.1, 0.11, true)]
+        [DataRow(1, 1.1, 0.01, false)]
+        [DataRow(2, 1, 0.01, false)]
+        public void   ContainsPoint_ValidInput_ReturnsExpectedValue(double x, double y, double eps, bool expected)
         {
             var line = new Line(new Point(0, 0), new Point(2, 2));
-            Assert.AreEqual(line.ContainsPoint(new Point(1, 1.1), 0.11), true);
+            Point point = new Point(x, y);
+            bool result = (bool) line.ContainsPoint(point, eps);
+            Assert.AreEqual(result, expected);
         }
 
-        [TestMethod]
-        public void Line_ContainsPoint_ValidInput2()
-        {
-            var line = new Line(new Point(0, 0), new Point(2, 2));
-            Assert.AreEqual(line.ContainsPoint(new Point(1, 1.1), 0.01), false);
-        }
 
         [TestMethod]
-        public void Line_ContainsPoint_ValidInput3()
-        {
-            var line = new Line(new Point(0, 1), new Point(1, 1));
-            Assert.AreEqual(line.ContainsPoint(new Point(2, 1), 0.01), false);
-        }
-
-        [TestMethod]
-        public void Line_CrossesLine_NullInput()
+        public void  Crosses_NullObject_ReturnsFalse()
         {
             var line = Line.Null;
             var line2 = Line.Parse("((0 0), (0 1)");
@@ -80,27 +73,15 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void Line_CrossesLine_ValidInput()
+        [DataRow("((0 0), (1 1))", "((0 1), (1 0))", true)]
+        [DataRow("((0 0), (1 1))", "((0 1), (1 1))", true)]
+        [DataRow("((0 0), (1 1))", "((0 1), (1 1.00000001))", false)]
+        public void   Crosses_ValidInput_ReturnsExpectedValue(string str1, string str2, bool expected)
         {
-            var line = Line.Parse("((0 0), (1 1))");
-            var line2 = Line.Parse("((0 1), (1 0))"); 
-            Assert.AreEqual(line.CrossesLine(line2), SqlBoolean.True);
-        }
-
-        [TestMethod]
-        public void Line_CrossesLine_ValidInput2()
-        {
-            var line = Line.Parse("((0 0), (1 1))");
-            var line2 = Line.Parse("((0 1), (1 1))"); 
-            Assert.AreEqual(line.CrossesLine(line2), SqlBoolean.True);
-        }
-
-        [TestMethod]
-        public void Line_CrossesLine_ValidInput3()
-        {
-            var line = Line.Parse("((0 0), (1 1))");
-            var line2 = Line.Parse("((0 1), (1 1.00000001))"); 
-            Assert.AreEqual(line.CrossesLine(line2), SqlBoolean.False);
+            var line = Line.Parse(str1);
+            var line2 = Line.Parse(str2);
+            bool result = (bool)line.CrossesLine(line2);
+            Assert.AreEqual(result, expected);
         }
     }
 }

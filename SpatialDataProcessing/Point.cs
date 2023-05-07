@@ -34,7 +34,7 @@ public struct Point : INullable, IBinarySerialize
         if (s.IsNull || s.ToString().Trim() == "") { return Null; }
 
         string[] xy = System.Text.RegularExpressions.Regex.Split(
-                        s.ToString().Trim('(', ')', ' '), @"\s+");
+                        s.ToString().Replace('\n', ' ').Trim('(', ')', ' '), @"\s+");
         double x = double.Parse(xy[0].Trim(' '), CultureInfo.InvariantCulture);
         double y = double.Parse(xy[1].Trim(' '), CultureInfo.InvariantCulture);
         return new Point(x, y);
@@ -71,6 +71,7 @@ public struct Point : INullable, IBinarySerialize
         get { return _y; }
         set { _y = (double) value; }
     }
+
     public static Point operator +(Point p) => new Point(p);
     public static Point operator -(Point p) => new Point(-p.X, -p.Y);
 
@@ -79,6 +80,14 @@ public struct Point : INullable, IBinarySerialize
 
     public static Point operator -(Point p, Point another)
         => p + (-another);
+    public static bool operator ==(Point p, Point another)
+    {
+        return (bool)( p.X == another.X && p.Y == another.Y);
+    }
+    public static bool operator !=(Point p, Point another)
+    {
+        return !(p==another);
+    }
 
     public SqlDouble DistanceTo(Point p2)
     {

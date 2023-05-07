@@ -1,15 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.Data;
-using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using Microsoft.SqlServer.Server;
-
+using SpatialDataProcessing;
 
 [Serializable]
 [SqlUserDefinedType(Format.UserDefined, MaxByteSize = -1, IsByteOrdered = false)]
@@ -22,6 +17,11 @@ public struct Polygon : INullable, IBinarySerialize
         {
             throw new SqlTypeException("Polygon needs to have at least 3 points");
         }
+        foreach(Point p in points)
+        {
+            if (p.IsNull) { throw new SqlTypeException("Polygon must not have null points!"); }
+        }
+
         _points = points;
         _isNull = false;
     }
@@ -32,29 +32,13 @@ public struct Polygon : INullable, IBinarySerialize
     {
         if (s.IsNull || s.ToString().Trim() == "") { return Null; }
 
-        string[] points = System.Text.RegularExpressions.Regex.Split(
-                        s.ToString().Trim('(', ')', ' '), @"\s*,\s*");
-
-        Point[] ps = new Point[points.Length];
-        for (int i = 0; i < points.Length; i++)
-        {
-            ps[i] = Point.Parse(points[i]);
-        }
+        Point[] ps = Utils.SqlStringToPointsArray(s);
         return new Polygon(ps);
     }
     public override string ToString()
     {
         if (IsNull) { return "NULL"; }
-        StringBuilder sb = new StringBuilder();
-        sb.Append("(");
-        foreach (Point p in _points)
-        {
-            sb.Append($"{p.ToString()},");
-        }
-        sb.Remove(sb.Length - 1, 1);
-        sb.Append(")");
-
-        return sb.ToString();
+        return Utils.PointsArrayToString(_points);
     }
 
     public static Polygon Null
@@ -114,10 +98,13 @@ public struct Polygon : INullable, IBinarySerialize
     }
 
 
-    public SqlBoolean ContainsPoint(Point point)
+    //Don't include the boundries
+    public SqlBoolean ContainsPointInside(Point point)
     {
+        if(point.IsNull || IsNull) { return false; }
+        //http://alienryderflex.com/polygon/
         int intersectionCount = 0;
-
+        
         for(int i = 0; i<_points.Length; i++)
         {
             Point p1 = _points[i];
@@ -128,15 +115,16 @@ public struct Polygon : INullable, IBinarySerialize
             && point.X <= Math.Max((double) p1.X, (double) p2.X)
             && p1.Y != p2.Y)
             {
-                double slope = (double) ((p2.Y - p1.Y) / (p2.X - p1.X));
                 if(p1.X == p2.X )
                 {
                     intersectionCount++;
                     continue;
                 }
 
+                Console.WriteLine(point);
+                double slope = (double) ((p2.Y - p1.Y) / (p2.X - p1.X));
                 double xIntersection = (double)((point.Y - p1.Y) * slope + p1.X);  
-                if(point.X < xIntersection)
+                if(point.X <= xIntersection)
                 {
                     intersectionCount++;
                 }

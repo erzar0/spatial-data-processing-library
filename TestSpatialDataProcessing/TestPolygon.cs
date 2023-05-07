@@ -5,9 +5,8 @@ namespace TestSpatialDataProcessing {
     public class TestPolygon
     {
         [TestMethod]
-        public void Polygon_Constructor_ValidInput()
+        public void Constructor_ValidInput_ReturnsValidObject()
         {
-            // Arrange
             var points = new Point[]
             {
                 new Point(0, 0),
@@ -16,30 +15,26 @@ namespace TestSpatialDataProcessing {
                 new Point(1, 0)
             };
 
-            // Act
             var polygon = new Polygon(points);
 
-            // Assert
             Assert.IsFalse(polygon.IsNull);
             CollectionAssert.AreEqual(points, polygon.Points);
         }
 
         [TestMethod]
-        public void Polygon_Constructor_InvalidInput()
+        public void Constructor_InvalidInput_Throws()
         {
-            // Arrange
             var points = new Point[]
             {
                 new Point(0, 0),
                 new Point(0, 1)
             };
 
-            // Act & Assert
             Assert.ThrowsException<SqlTypeException>(() => new Polygon(points));
         }
 
         [TestMethod]
-        public void Polygon_Parse_ValidInput()
+        public void Parse_ValidInput_ReturnsValidObject()
         {
             var expectedPoints = new Point[]
             {
@@ -57,7 +52,7 @@ namespace TestSpatialDataProcessing {
         }
 
         [TestMethod]
-        public void Polygon_Parse_NullInput()
+        public void Parse_NullInput_ReturnsNullObject()
         {
             var input = SqlString.Null;
 
@@ -67,7 +62,7 @@ namespace TestSpatialDataProcessing {
         }
 
         [TestMethod]
-        public void Polygon_ToString_ValidInput()
+        public void ToString_ValidInput_ReturnsValidString()
         {
             var points = new Point[]
             {
@@ -85,7 +80,7 @@ namespace TestSpatialDataProcessing {
         }
 
         [TestMethod]
-        public void Polygon_ToString_NullInput()
+        public void ToString_NullInput_ReturnsNullString()
         {
             var polygon = Polygon.Null;
 
@@ -95,7 +90,7 @@ namespace TestSpatialDataProcessing {
         }
 
         [TestMethod]
-        public void Polygon_Circumference_ValidInput()
+        public void Circumference_ValidInput_ReturnsCircumference()
         {
             var points = new Point[]
             {
@@ -113,7 +108,7 @@ namespace TestSpatialDataProcessing {
         }
 
         [TestMethod]
-        public void Polygon_Circumference_NullInput()
+        public void Circumference_NullInput_ReturnsNull()
         {
             var polygon = Polygon.Null;
 
@@ -123,7 +118,7 @@ namespace TestSpatialDataProcessing {
         }
 
         [TestMethod]
-        public void Polygon_Area_ValidInput()
+        public void Area_ValidInput_ValidArea()
         {
             var polygon = Polygon.Parse("((0 0), (0 1), (1 1), (1 0))");
 
@@ -131,7 +126,7 @@ namespace TestSpatialDataProcessing {
         }
         
         [TestMethod]
-        public void Polygon_Area_NullInput()
+        public void Area_NullInput_ReturnsNull()
         {
             var polygon = Polygon.Null;
 
@@ -139,7 +134,7 @@ namespace TestSpatialDataProcessing {
         }
 
         [TestMethod]
-        public void Polygon_ParseEdges_InvalidInput()
+        public void ParseEdges_InvalidInput_ReturnsNull()
         {
             Point[] ps =
             {
@@ -151,7 +146,7 @@ namespace TestSpatialDataProcessing {
         }
 
         [TestMethod]
-        public void Polygon_ParseEdges_ValidInput()
+        public void ParseEdges_ValidInput_ReturnsPolygonEdges()
         {
             Point[] ps =
             {
@@ -166,6 +161,36 @@ namespace TestSpatialDataProcessing {
             };
             CollectionAssert.AreEqual(Polygon.ParsedEdges(ps), edges);
         }
+
+        [TestMethod]
+        public void ContainsPoint_NullInput_ReturnsFalse()
+        {
+            Polygon polygon = new Polygon(new Point[] { new Point(0, 0), new Point(0, 1), new Point(1, 1) });
+            Assert.AreEqual(polygon.ContainsPointInside(Point.Null), false);
+        }
+
+        [TestMethod]
+        public void ContainsPoint_NullObject_ReturnsFalse()
+        {
+            Assert.AreEqual(Polygon.Null.ContainsPointInside(new Point(0,0)), false);
+        }
+
+        [TestMethod]
+        [DataRow(0.5, 0.5, true)]
+        [DataRow(0, -0.1, false)]
+        [DataRow(0, 0, false)]
+        [DataRow(0, 0.5, false)]
+        [DataRow(10e-10, 10e-10, true)]
+        public void ContainsPoint_ValidInput_ReturnsExpectedValue(double x, double y, bool expected)
+        {
+            Polygon polygon = new Polygon(new Point[] { new Point(0, 0), new Point(0, 1), new Point(1, 1), new Point(1, 0) });
+            Point point = new Point(x, y);
+
+            Boolean result = (bool) polygon.ContainsPointInside(point);
+
+            Assert.AreEqual(result, expected);
+        }
+
 
     } 
 }

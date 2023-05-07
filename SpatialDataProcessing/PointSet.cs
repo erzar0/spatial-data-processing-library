@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.SqlServer.Server;
 using System.Linq;
+using SpatialDataProcessing;
 
 
 [Serializable]
@@ -32,29 +33,14 @@ public struct PointSet: INullable, IBinarySerialize
     {
         if (s.IsNull || s.ToString().Trim() == "") { return Null; }
 
-        string[] points = System.Text.RegularExpressions.Regex.Split(
-                        s.ToString().Trim('(', ')', ' '), @"\s*,\s*");
-
-        Point[] ps = new Point[points.Length];
-        for (int i = 0; i < points.Length; i++)
-        {
-            ps[i] = Point.Parse(points[i]);
-        }
+        Point[] ps = Utils.SqlStringToPointsArray(s);
         return new PointSet(ps);
     }
     public override string ToString()
     {
         if (IsNull) { return "NULL"; }
-        StringBuilder sb = new StringBuilder();
-        sb.Append("(");
-        foreach (Point p in _points)
-        {
-            sb.Append($"{p},");
-        }
-        sb.Remove(sb.Length - 1, 1);
-        sb.Append(")");
 
-        return sb.ToString();
+        return Utils.PointsArrayToString(_points);
     }
 
     public static PointSet Null
