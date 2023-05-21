@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.SqlServer.Server;
 using System.Linq;
-using SpatialDataProcessing;
+using System.Reflection;
 
 
 [Serializable]
@@ -27,14 +27,28 @@ public struct PointSet: INullable, IBinarySerialize
         }
     }
 
+    public PointSet(Polygon p)
+    {
+        if(p.IsNull)
+        {
+            _isNull = true;
+            _points = null;
+        }
+        else
+        {
+            _isNull = false;
+            _points = new Point[p.Points.Length];
+            Array.Copy(p.Points, _points, _points.Length);
+        }
+    }
+
 
     [SqlMethod(OnNullCall = false)]
     public static PointSet Parse(SqlString s)
     {
         if (s.IsNull || s.ToString().Trim() == "") { return Null; }
 
-        Point[] ps = Utils.SqlStringToPointsArray(s);
-        return new PointSet(ps);
+        return new PointSet(Utils.SqlStringToPointsArray(s));
     }
     public override string ToString()
     {
@@ -62,9 +76,9 @@ public struct PointSet: INullable, IBinarySerialize
     public Polygon FindConvexHull()
     {
         //https://pl.wikipedia.org/wiki/Algorytm_Grahama
-        if (IsNull) { return Polygon.Null;  }
+        if (IsNull || _points.Length < 3) { return Polygon.Null;  }
 
-        Point anchor = _points.OrderBy(p => p.X).ThenBy(p => p.Y).First();
+        Point anchor = _points.OrderBy(p => p.Y).ThenBy(p => p.X).First();
         Point[] sortedPoints = _points.OrderBy(p => (p - anchor).PolarAngle()).ToArray();
 
         Stack<Point> stack = new Stack<Point>();
@@ -74,9 +88,11 @@ public struct PointSet: INullable, IBinarySerialize
         for(int i = 2; i < sortedPoints.Length; i++)
         {
             Point top = stack.Pop();
-            while(stack.Count > 1 && Orientation(stack.Peek(), top, sortedPoints[i]) != ORIENTATION.COUNTERCLOCKWISE)
+            Utils.ORIENTATION orientation = Utils.Orientation(stack.Peek(), top, sortedPoints[i]);
+            while(stack.Count > 1 && (orientation != Utils.ORIENTATION.COUNTERCLOCKWISE))
             {
                 top = stack.Pop();
+                orientation = Utils.Orientation(stack.Peek(), top, sortedPoints[i]);
             }
             stack.Push(top);
             stack.Push(sortedPoints[i]);
@@ -85,15 +101,10 @@ public struct PointSet: INullable, IBinarySerialize
         return new Polygon(stack.ToArray());
     }
 
-    private enum ORIENTATION { CLOCKWISE, COUNTERCLOCKWISE, COLLINEAR}
 
-    private static ORIENTATION Orientation(Point p, Point q, Point r)
-    {
-        //(pq.cross(qr))
-        double crossProduct = (double) ((q.Y - p.Y) * (r.X - p.X) - (q.X - p.X) * (r.Y - q.Y));
-
-        if(crossProduct == 0) { return ORIENTATION.COLLINEAR; }
-        return crossProduct > 0 ? ORIENTATION.CLOCKWISE : ORIENTATION.COUNTERCLOCKWISE; 
+    public Point GetCentroid() {
+        if(IsNull || _points.Length < 1) { return  Point.Null; }
+        return Utils.CalculateCentroid(_points);
     }
 
 

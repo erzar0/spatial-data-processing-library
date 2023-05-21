@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.SqlServer.Server;
-using SpatialDataProcessing;
 
 [Serializable]
 [SqlUserDefinedType(Format.UserDefined, MaxByteSize = -1, IsByteOrdered = false)]
@@ -13,13 +13,17 @@ public struct Polygon : INullable, IBinarySerialize
 {
     public Polygon(Point[] points)
     {
-        if (points.Length < 3)
+        if (points == null || points.Length < 3)
         {
-            throw new SqlTypeException("Polygon needs to have at least 3 points");
+            throw new SqlTypeException("Polygon needs to have at least 3 points!");
         }
         foreach(Point p in points)
         {
             if (p.IsNull) { throw new SqlTypeException("Polygon must not have null points!"); }
+        }
+        if(DoesEdgesIntersect(ParseEdges(points).ToArray()))
+        {
+            throw new SqlTypeException("Edges of polygon must not intersect!");
         }
 
         _points = points;
@@ -32,12 +36,12 @@ public struct Polygon : INullable, IBinarySerialize
     {
         if (s.IsNull || s.ToString().Trim() == "") { return Null; }
 
-        Point[] ps = Utils.SqlStringToPointsArray(s);
-        return new Polygon(ps);
+        return new Polygon(Utils.SqlStringToPointsArray(s));
     }
     public override string ToString()
     {
         if (IsNull) { return "NULL"; }
+
         return Utils.PointsArrayToString(_points);
     }
 
@@ -74,11 +78,11 @@ public struct Polygon : INullable, IBinarySerialize
         return circumference;
     }
 
+
+    //Works only for non self-intersecting polygons
+    //https://www.mathopenref.com/coordpolygonarea2.html
     public SqlDouble Area()
     {
-        //Works only for non self-crossing polygons
-        //https://www.mathopenref.com/coordpolygonarea2.html
-
         if (IsNull) { return SqlDouble.Null; }
 
         double area = 0;
@@ -89,22 +93,20 @@ public struct Polygon : INullable, IBinarySerialize
             Point a = _points[i - 1];
             Point b = _points[i];
             partial = (double) ((a.X + b.X) * (a.Y - b.Y));
-            Console.WriteLine(partial);
             area += partial;
         }
         partial = (double) ((_points[i-1].X - _points[0].X) * (_points[i-1].Y - _points[0].Y));
-        Console.Write(partial);
         return area/2;
     }
 
 
-    //Don't include the boundries
-    public SqlBoolean ContainsPointInside(Point point)
+    //http://alienryderflex.com/polygon/
+    //Don't includes the boundries
+    public SqlBoolean ContainsPoint(Point point)
     {
         if(point.IsNull || IsNull) { return false; }
-        //http://alienryderflex.com/polygon/
+
         int intersectionCount = 0;
-        
         for(int i = 0; i<_points.Length; i++)
         {
             Point p1 = _points[i];
@@ -121,7 +123,6 @@ public struct Polygon : INullable, IBinarySerialize
                     continue;
                 }
 
-                Console.WriteLine(point);
                 double slope = (double) ((p2.Y - p1.Y) / (p2.X - p1.X));
                 double xIntersection = (double)((point.Y - p1.Y) * slope + p1.X);  
                 if(point.X <= xIntersection)
@@ -133,7 +134,23 @@ public struct Polygon : INullable, IBinarySerialize
         return intersectionCount % 2 == 1;
     }
 
-    public static List<Line> ParsedEdges(Point[] points)
+
+    public SqlBoolean IntersectsLine(Line line)
+    {
+        if(IsNull || line.IsNull) return false;
+
+        List<Line> edges = ParseEdges(_points);
+        foreach(var edge in edges)
+        {
+            if(edge.Intersects(line))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static List<Line> ParseEdges(Point[] points)
     {
         if(points == null || points.Length < 2 ) { return null; }
 
@@ -145,6 +162,30 @@ public struct Polygon : INullable, IBinarySerialize
         }
         result.Add((new Line(points[i - 1], points[0])));
         return result;
+    }
+
+    public static bool DoesEdgesIntersect(Line[] edges)
+    {
+        if(edges == null || edges.Length < 1)  return false;
+
+        for(int i = 0; i < edges.Length; i++)
+        {
+            for(int j = i+1; j < edges.Length; j++ )
+            {
+                if (edges[i].Intersects(edges[j]))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public Point GetCentroid() 
+    {
+        if (IsNull) { return Point.Null; }
+
+        return Utils.CalculateCentroid(_points);
     }
 
     public void Read(BinaryReader reader)

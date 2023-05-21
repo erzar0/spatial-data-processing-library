@@ -1,4 +1,6 @@
 ﻿using System.Data.SqlTypes;
+using System.Runtime.InteropServices;
+using System.Timers;
 
 namespace TestSpatialDataProcessing
 {
@@ -6,7 +8,7 @@ namespace TestSpatialDataProcessing
     public class TestPointSet
     {
         [TestMethod]
-        public void  Constructor_ValidInput_ReturnsValidObject()
+        public void  Constructor_ValidInput_ReturnsPointSet()
         {
             var points = new Point[]
             {
@@ -23,12 +25,22 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void  Constructor_NullInput_ReturnsNullObject()
+        public void  Constructor_NullInput_ReturnsPointset()
         {
             var points = new Point[] { };
 
             Assert.AreEqual(new PointSet(points), PointSet.Null);
             Assert.AreEqual(new PointSet(null), PointSet.Null);
+        }
+
+        [TestMethod]
+        public void  Constructor_PolygonInput_ReturnsPointSet()
+        {
+            var input = new SqlString("((0 0), (0 1), (1 1), (1 0))");
+            var polygon = Polygon.Parse(input);
+
+            CollectionAssert.AreEquivalent(new PointSet(polygon).Points, polygon.Points);
+            Assert.AreEqual(new PointSet(Polygon.Null), PointSet.Null);
         }
 
         [TestMethod]
@@ -100,23 +112,21 @@ namespace TestSpatialDataProcessing
                 new Point(-10, -10),
                 new Point(10, 10),
                 new Point(10, -10),
-                new Point(-10, 10),
-                new Point(-10, 0),
+                new Point(-10, 10)
             };
             Point[] pointSetPoints = new Point[]
             {
                 new Point(0, 0),
-                new Point(0, 1),
+                new Point(-1, -1),
                 new Point(1, 1),
-                new Point(1, 0)
+                new Point(1, -1),
+                new Point(-1, -1),
             }.Concat(convexHullPoints).ToArray();
 
             PointSet pointset = new PointSet(pointSetPoints);
-            Polygon polygon = new Polygon(convexHullPoints);
-            Console.WriteLine(pointset.FindConvexHull() + " " + polygon);
 
-            CollectionAssert.AreEqual(pointset.FindConvexHull().Points.OrderBy(p => p.X).ThenBy(p => p.Y).ToArray()
-                                    , polygon.Points.OrderBy(p => p.X).ThenBy(p => p.Y).ToArray());
+            pointset.FindConvexHull().Points.ToList().ForEach(e => Console.WriteLine(e));
+            CollectionAssert.AreEquivalent(pointset.FindConvexHull().Points, convexHullPoints);
         }
 
     }

@@ -65,23 +65,29 @@ namespace TestSpatialDataProcessing
 
 
         [TestMethod]
-        public void  Crosses_NullObject_ReturnsFalse()
+        public void  Intersects_NullObject_ReturnsFalse()
         {
             var line = Line.Null;
             var line2 = Line.Parse("((0 0), (0 1)");
-            Assert.AreEqual(line.CrossesLine(line2), SqlBoolean.False);
+            Assert.AreEqual(line.Intersects(line2), SqlBoolean.False);
         }
 
         [TestMethod]
         [DataRow("((0 0), (1 1))", "((0 1), (1 0))", true)]
-        [DataRow("((0 0), (1 1))", "((0 1), (1 1))", true)]
+        [DataRow("((0 0), (1 1))", "((0 1), (1 1))", false)]
         [DataRow("((0 0), (1 1))", "((0 1), (1 1.00000001))", false)]
-        public void   Crosses_ValidInput_ReturnsExpectedValue(string str1, string str2, bool expected)
+        [DataRow("((0 0), (1 1))", "((0 1), (1 0.99999999))", true)]
+        [DataRow("((0 0), (1 1))", "((0 1), (1 0))", true)]
+        [DataRow("((1 1), (1 0))", "((0 0), (2 1))", true)]
+        public void   Intersects_ValidInput_ReturnsExpectedValue(string str1, string str2, bool expected)
         {
             var line = Line.Parse(str1);
             var line2 = Line.Parse(str2);
-            bool result = (bool)line.CrossesLine(line2);
-            Assert.AreEqual(result, expected);
+            Console.WriteLine(line.Intersects(line2));
+            Console.WriteLine(line.Intersects(line));
+
+            Assert.AreEqual((bool)line.Intersects(line2), expected);
+            Assert.AreEqual((bool)line2.Intersects(line), expected);
         }
     }
 }

@@ -5,7 +5,7 @@ namespace TestSpatialDataProcessing {
     public class TestPolygon
     {
         [TestMethod]
-        public void Constructor_ValidInput_ReturnsValidObject()
+        public void Constructor_ValidInput_ReturnsPolygon()
         {
             var points = new Point[]
             {
@@ -21,20 +21,22 @@ namespace TestSpatialDataProcessing {
             CollectionAssert.AreEqual(points, polygon.Points);
         }
 
-        [TestMethod]
-        public void Constructor_InvalidInput_Throws()
-        {
-            var points = new Point[]
-            {
-                new Point(0, 0),
-                new Point(0, 1)
-            };
 
+        [TestMethod]
+        [DataRow("((0 0), (1 1), (1 0), (0 1))")]
+        [DataRow("((0 0), (0 1))")]
+        [DataRow("(())")]
+        [DataRow("()")]
+        [DataRow("")]
+        public void Constructor_InvalidInput_Throws(string pointsString)
+        {
+            Point[] points = Utils.SqlStringToPointsArray(new SqlString(pointsString));
             Assert.ThrowsException<SqlTypeException>(() => new Polygon(points));
         }
 
+
         [TestMethod]
-        public void Parse_ValidInput_ReturnsValidObject()
+        public void Parse_ValidInput_ReturnsPolygon()
         {
             var expectedPoints = new Point[]
             {
@@ -52,7 +54,7 @@ namespace TestSpatialDataProcessing {
         }
 
         [TestMethod]
-        public void Parse_NullInput_ReturnsNullObject()
+        public void Parse_NullInput_ReturnsPolygon()
         {
             var input = SqlString.Null;
 
@@ -108,7 +110,7 @@ namespace TestSpatialDataProcessing {
         }
 
         [TestMethod]
-        public void Circumference_NullInput_ReturnsNull()
+        public void Circumference_NullInput_ReturnsNullValue()
         {
             var polygon = Polygon.Null;
 
@@ -136,13 +138,7 @@ namespace TestSpatialDataProcessing {
         [TestMethod]
         public void ParseEdges_InvalidInput_ReturnsNull()
         {
-            Point[] ps =
-            {
-                new Point(0, 0),
-            };
-            CollectionAssert.AreEqual(Polygon.ParsedEdges(ps), null);
-            CollectionAssert.AreEqual(Polygon.ParsedEdges(null), null);
-
+            CollectionAssert.AreEqual(Polygon.ParseEdges(new Point[] {}), null);
         }
 
         [TestMethod]
@@ -159,20 +155,20 @@ namespace TestSpatialDataProcessing {
                 new Line(ps[1], ps[2]),
                 new Line(ps[2], ps[0])
             };
-            CollectionAssert.AreEqual(Polygon.ParsedEdges(ps), edges);
+            CollectionAssert.AreEquivalent(Polygon.ParseEdges(ps), edges);
         }
 
         [TestMethod]
         public void ContainsPoint_NullInput_ReturnsFalse()
         {
             Polygon polygon = new Polygon(new Point[] { new Point(0, 0), new Point(0, 1), new Point(1, 1) });
-            Assert.AreEqual(polygon.ContainsPointInside(Point.Null), false);
+            Assert.AreEqual(polygon.ContainsPoint(Point.Null), false);
         }
 
         [TestMethod]
         public void ContainsPoint_NullObject_ReturnsFalse()
         {
-            Assert.AreEqual(Polygon.Null.ContainsPointInside(new Point(0,0)), false);
+            Assert.AreEqual(Polygon.Null.ContainsPoint(new Point(0,0)), false);
         }
 
         [TestMethod]
@@ -186,9 +182,30 @@ namespace TestSpatialDataProcessing {
             Polygon polygon = new Polygon(new Point[] { new Point(0, 0), new Point(0, 1), new Point(1, 1), new Point(1, 0) });
             Point point = new Point(x, y);
 
-            Boolean result = (bool) polygon.ContainsPointInside(point);
+            Boolean result = (bool) polygon.ContainsPoint(point);
 
             Assert.AreEqual(result, expected);
+        }
+
+        [TestMethod]
+        [DataRow("((1 1), (2 2))", false)]
+        [DataRow("((0 0), (1 1))", false)]
+        [DataRow("((0 0), (2 1))", true)]
+        public void IntersectsLine_ValidInput_ReturnsExpectedValue(string lineStr, bool expected)
+        {
+            var points = new Point[]
+            {
+                new Point(0, 0),
+                new Point(0, 1),
+                new Point(1, 1),
+                new Point(1, 0)
+            };
+            Polygon p = new Polygon(points);
+            Line l = Line.Parse(lineStr);
+            Assert.AreEqual(p.IntersectsLine(l), expected);
+
+
+
         }
 
 

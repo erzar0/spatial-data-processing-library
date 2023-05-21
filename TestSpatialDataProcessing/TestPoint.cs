@@ -5,7 +5,7 @@ namespace TestSpatialDataProcessing
     [TestClass]
     public class TestPoint {
         [TestMethod]
-        public void  Constructor_ValidInput_ReturnsValidObject()
+        public void  Constructor_ValidInput_ReturnsPoint()
         {
             var point = new Point(new SqlDouble(1.0), new SqlDouble(2.0));
             Assert.AreEqual(1.0, point.X.Value);
@@ -13,7 +13,83 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void  Parse_ValidInput_ReturnsValidObject()
+        public void Constructor_PointInput_CopiesPoint()
+        {
+            var point = new Point(1, 2);
+            var copiedPoint = new Point(point);
+
+            Assert.IsTrue(copiedPoint == point);
+            copiedPoint.X = 3;
+            Assert.IsFalse(copiedPoint == point);
+        }
+
+        [TestMethod]
+        public void OperatorPlus_ReturnsNewPoint()
+        {
+            Point p1 = new Point(1, 1);
+            Point p2 = +p1;
+            p1.X = 0;
+            Assert.IsTrue((bool)(p1 != p2));
+        }
+
+        [TestMethod]
+        public void OperatorMinus_ReturnsNewPoint()
+        {
+            Point p1 = new Point(1, 1);
+            Point p2 = -p1;
+            Assert.IsTrue((bool)(p1.X != p2.X));
+        }
+
+        [TestMethod]
+        public void OperatorPlus_AddsTwoPoints()
+        {
+            Point p1 = new Point(1, 1);
+            Point p2 = new Point(2, 2);
+            Point p3 = p1 + p2;
+            Point p4 = new Point(3, 3);
+            Assert.IsTrue(p3 == p4);
+        }
+
+        [TestMethod]
+        public void OperatorMinus_SubtractsTwoPoints()
+        {
+            Point p1 = new Point(1, 1);
+            Point p2 = new Point(2, 2);
+            Point p3 = p1 - p2;
+            Point p4 = new Point(-1, -1);
+            Assert.IsTrue(p3 == p4);
+        }
+
+        [TestMethod]
+        public void OperatorEquals_ChecksIfPointsAreExactlyTheSame()
+        {
+            Point p1 = new Point(1, 1);
+            Point p2 = new Point(1, 1);
+            Point p3 = new Point(1, 1.000000001);
+            Assert.IsTrue(p1 == p2);
+            Assert.IsTrue(p1 != p3);
+        }
+
+        [TestMethod]
+        public void OperatorMultiply_MultiplyPointByScale()
+        {
+            Point p1 = new Point(1, 1);
+            Point p2 = p1 * 2;
+            Point p3 = new Point(2, 2);
+            Assert.IsTrue(p2 == p3);
+        }
+
+        [TestMethod]
+        public void OperatorDivide_DividesPointByScale()
+        {
+            Point p1 = new Point(2, 2);
+            Point p2 = p1 / 2;
+            Point p3 = new Point(1, 1);
+            Assert.IsTrue(p2 == p3);
+        }
+
+        [TestMethod]
+        public void  Parse_ValidInput_ReturnsPoint()
         {
             var point = Point.Parse(new SqlString("(5.432 2.345)"));
             Assert.AreEqual(5.432, point.X.Value);
@@ -67,6 +143,5 @@ namespace TestSpatialDataProcessing
             }
       
         }   
-
     }
 }

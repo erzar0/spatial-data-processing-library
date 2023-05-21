@@ -3,8 +3,6 @@ using System.ComponentModel.Design;
 using System.Data;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Microsoft.SqlServer.Server;
 
 
@@ -76,10 +74,10 @@ public struct Line : INullable
     {
         if (IsNull) { return SqlBoolean.False; }
 
-        if (point.X > Math.Max((double) _a.X, (double) _b.X)
-        ||point.X < Math.Min((double) _a.X, (double) _b.X) 
-        ||point.Y > Math.Max((double) _a.Y, (double) _b.Y)
-        ||point.Y < Math.Min((double) _a.Y, (double) _b.Y))
+        if (point.X  >= Math.Max((double)_a.X, (double)_b.X)
+            || point.X  <= Math.Min((double)_a.X, (double)_b.X)
+            || point.Y  >= Math.Max((double)_a.Y, (double)_b.Y)
+            || point.Y  <= Math.Min((double)_a.Y, (double)_b.Y))
         {
             return false;
         }
@@ -87,39 +85,66 @@ public struct Line : INullable
         SqlDouble m = GetSlopeValue();
         SqlDouble c = GetInterceptValue();
         double distance = Math.Abs((double) (point.Y - (m * point.X + c)));
+        Console.WriteLine(distance);
         return distance <= (double) eps;
     }
 
-    public SqlBoolean CrossesLine(Line another)
+    public SqlBoolean Intersects(Line another)
     {
         if (IsNull || another.IsNull)
         {
             return SqlBoolean.False;
         }
-        double m1 = (double) GetSlopeValue();
-        double c1 = (double) GetInterceptValue();
-        double m2 = (double) another.GetSlopeValue();
-        double c2 = (double) another.GetInterceptValue();
-        
-        double x = (c2-c1)/(m1-m2);
-        double y = m1 * x + c1;
-        Point intersectionPoint = new Point(x, y);
 
-        if(ContainsPoint(intersectionPoint, 1e-12) && another.ContainsPoint(intersectionPoint, 1e-12))
-        {
-            return SqlBoolean.True;
-        }
+        Utils.ORIENTATION o1 = Utils.Orientation(A, B, another.A);
+        Utils.ORIENTATION o2 = Utils.Orientation(A, B, another.B);
+        Utils.ORIENTATION o3 = Utils.Orientation(another.A, another.B, A);
+        Utils.ORIENTATION o4 = Utils.Orientation(another.A, another.B, B);
+
+        if (o1 != o2 && o3 != o4 && ContainsPoint(GetIntersection(another), 1e-12)) return true;
+        if (o1 == Utils.ORIENTATION.COLLINEAR && ContainsPoint(another.A, 1e-12)) return true;
+        if (o2 == Utils.ORIENTATION.COLLINEAR && ContainsPoint(another.B, 1e-12)) return true;
+        if (o3 == Utils.ORIENTATION.COLLINEAR && another.ContainsPoint(A, 1e-12)) return true;
+        if (o4 == Utils.ORIENTATION.COLLINEAR && another.ContainsPoint(B, 1e-12)) return true;
 
         return SqlBoolean.False;
     }
 
+
+    public Point GetIntersection(Line another)
+    {
+        if (IsNull || another.IsNull)
+        {
+            return Point.Null;
+        }
+        double m1 = (double) GetSlopeValue();
+        double c1 = (double) GetInterceptValue();
+        double m2 = (double) another.GetSlopeValue();
+        double c2 = (double) another.GetInterceptValue();
+
+        double dm = m1 - m2;
+        dm = dm > 0 ? Math.Max(dm, 1e-12) : Math.Min(dm, -1e-12); 
+        double dc = c2 - c1;
+
+        double x = dc / dm;
+        double y = m1 * x + c1;
+        return new Point(x, y);
+
+    }
+
     private SqlDouble GetSlopeValue()
     {
-        return (_b.Y - _a.Y) / (_b.X - _a.X);
+        if(IsNull) { return SqlDouble.Null; }
+
+        double dY = (double) (_b.Y - _a.Y);
+        double dX = Math.Max((double) (_b.X - _a.X), 1e-12);
+        return dY / dX;
     }
 
     private SqlDouble GetInterceptValue()
     {
+        if(IsNull) { return SqlDouble.Null; }
+        
         return _a.Y - GetSlopeValue() * _a.X;
     }
 

@@ -88,6 +88,14 @@ public struct Point : INullable, IBinarySerialize
     {
         return !(p==another);
     }
+    public static Point operator *(Point p, double scale)
+    {
+        return new Point(p.X * scale, p.Y * scale);
+    }
+    public static Point operator /(Point p, double scale)
+    {
+        return new Point(p.X / scale, p.Y / scale);
+    }
 
     public SqlDouble DistanceTo(Point p2)
     {
