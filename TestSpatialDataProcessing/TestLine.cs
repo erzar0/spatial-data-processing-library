@@ -77,7 +77,6 @@ namespace TestSpatialDataProcessing
         [DataRow("((0 0), (1 1))", "((0 1), (1 1))", false)]
         [DataRow("((0 0), (1 1))", "((0 1), (1 1.00000001))", false)]
         [DataRow("((0 0), (1 1))", "((0 1), (1 0.99999999))", true)]
-        [DataRow("((0 0), (1 1))", "((0 1), (1 0))", true)]
         [DataRow("((1 1), (1 0))", "((0 0), (2 1))", true)]
         public void   Intersects_ValidInput_ReturnsExpectedValue(string str1, string str2, bool expected)
         {

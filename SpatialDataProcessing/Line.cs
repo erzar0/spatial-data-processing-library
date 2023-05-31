@@ -74,10 +74,21 @@ public struct Line : INullable
     {
         if (IsNull) { return SqlBoolean.False; }
 
-        if (point.X  >= Math.Max((double)_a.X, (double)_b.X)
-            || point.X  <= Math.Min((double)_a.X, (double)_b.X)
-            || point.Y  >= Math.Max((double)_a.Y, (double)_b.Y)
-            || point.Y  <= Math.Min((double)_a.Y, (double)_b.Y))
+        // ends of line check 
+        if( _a.DistanceTo(point) < 2 * eps || _b.DistanceTo(point) < 2 * eps)
+        {
+            return false;
+        }
+        
+        double minX = Math.Min(_a.X.Value, _b.X.Value);
+        double maxX = Math.Max(_a.X.Value, _b.X.Value);
+        double minY = Math.Min(_a.Y.Value, _b.Y.Value);
+        double maxY = Math.Max(_a.Y.Value, _b.Y.Value);
+        
+        // bounds check
+        if ((minX - point.X > eps || point.X - maxX > eps
+            || minY - point.Y > eps || point.Y - maxY > eps)
+        )
         {
             return false;
         }
@@ -86,7 +97,7 @@ public struct Line : INullable
         SqlDouble c = GetInterceptValue();
         double distance = Math.Abs((double) (point.Y - (m * point.X + c)));
         Console.WriteLine(distance);
-        return distance <= (double) eps;
+        return distance <= (double) 2 * eps;
     }
 
     public SqlBoolean Intersects(Line another)
