@@ -2,15 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.SqlServer.Server;
 
+/// <summary>
+/// Represents a Polygon structure that supports geometric operations.
+/// </summary>
 [Serializable]
 [SqlUserDefinedType(Format.UserDefined, MaxByteSize = -1, IsByteOrdered = false)]
 [StructLayout(LayoutKind.Sequential)]
 public struct Polygon : INullable, IBinarySerialize
 {
+    /// <summary>
+    /// Initializes a new instance of the Polygon struct with the provided array of points.
+    /// </summary>
+    /// <param name="points">An array of points representing the vertices of the polygon.</param>
+    /// <exception cref="SqlTypeException">Thrown when the points array is null, has less than 3 points, contains null points, or the edges of the polygon intersect.</exception>
     public Polygon(Point[] points)
     {
         if (points == null || points.Length < 3)
@@ -30,7 +37,11 @@ public struct Polygon : INullable, IBinarySerialize
         _isNull = false;
     }
 
-
+    /// <summary>
+    /// Parses a string representation of a Polygon and returns a new instance.
+    /// </summary>
+    /// <param name="s">The string representation of the Polygon.</param>
+    /// <returns>A new instance of the Polygon struct parsed from the input string.</returns>
     [SqlMethod(OnNullCall = false)]
     public static Polygon Parse(SqlString s)
     {
@@ -38,6 +49,11 @@ public struct Polygon : INullable, IBinarySerialize
 
         return new Polygon(Utils.SqlStringToPointsArray(s));
     }
+
+    /// <summary>
+    /// Returns a string representation of the Polygon.
+    /// </summary>
+    /// <returns>A string representation of the Polygon.</returns>
     public override string ToString()
     {
         if (IsNull) { return "NULL"; }
@@ -45,6 +61,9 @@ public struct Polygon : INullable, IBinarySerialize
         return Utils.PointsArrayToString(_points);
     }
 
+    /// <summary>
+    /// Gets the null instance of the Polygon.
+    /// </summary>
     public static Polygon Null
     {
         get
@@ -54,13 +73,24 @@ public struct Polygon : INullable, IBinarySerialize
             return p;
         }
     }
+
+    /// <summary>
+    /// Gets a value indicating whether the Polygon is null.
+    /// </summary>
     public bool IsNull
     {
         get { return _isNull; }
     }
 
+    /// <summary>
+    /// Gets an array of points representing the vertices of the Polygon.
+    /// </summary>
     public Point[] Points { get { return _points; } }
 
+    /// <summary>
+    /// Calculates and returns the circumference of the Polygon.
+    /// </summary>
+    /// <returns>The circumference of the Polygon.</returns>
     public SqlDouble Circumference()
     {
         if (IsNull)
@@ -79,8 +109,12 @@ public struct Polygon : INullable, IBinarySerialize
     }
 
 
-    //Works only for non self-intersecting polygons
-    //https://www.mathopenref.com/coordpolygonarea2.html
+    /// <summary>
+    /// Calculates and returns the area of the Polygon
+    /// , works only for non self-intersecting polygons. 
+    /// Algorithm used can be found here: https://www.mathopenref.com/coordpolygonarea2.html
+    /// </summary>
+    /// <returns>The area of the Polygon.</returns>
     public SqlDouble Area()
     {
         if (IsNull) { return SqlDouble.Null; }
@@ -100,8 +134,13 @@ public struct Polygon : INullable, IBinarySerialize
     }
 
 
-    //http://alienryderflex.com/polygon/
-    //Don't includes the boundries
+    
+    /// <summary>
+    /// Determines whether the Polygon contains the specified point excluding boundries. 
+    /// Used algorithm can be found here: http://alienryderflex.com/polygon/
+    /// </summary>
+    /// <param name="point">The point to check.</param>
+    /// <returns>True if the Polygon contains the point, false otherwise.</returns>
     public SqlBoolean ContainsPoint(Point point)
     {
         if(point.IsNull || IsNull) { return false; }
@@ -135,6 +174,11 @@ public struct Polygon : INullable, IBinarySerialize
     }
 
 
+    /// <summary>
+    /// Determines whether the Polygon intersects with the specified line.
+    /// </summary>
+    /// <param name="line">The line to check.</param>
+    /// <returns>True if the Polygon intersects with the line, false otherwise.</returns>
     public SqlBoolean IntersectsLine(Line line)
     {
         if(IsNull || line.IsNull) return false;
@@ -150,6 +194,11 @@ public struct Polygon : INullable, IBinarySerialize
         return false;
     }
 
+    /// <summary>
+    /// Parses an array of points and returns a list of Line objects representing the edges of a polygon.
+    /// </summary>
+    /// <param name="points">An array of points representing the vertices of a polygon.</param>
+    /// <returns>A list of Line objects representing the edges of the polygon.</returns>
     public static List<Line> ParseEdges(Point[] points)
     {
         if(points == null || points.Length < 2 ) { return null; }
@@ -164,7 +213,50 @@ public struct Polygon : INullable, IBinarySerialize
         return result;
     }
 
-    public static bool DoesEdgesIntersect(Line[] edges)
+
+    /// <summary>
+    /// Calculates centroid if Polygon
+    /// </summary>
+    /// <returns>Point instance representing centroid of polygon</returns>
+    public Point GetCentroid() 
+    {
+        if (IsNull) { return Point.Null; }
+
+        return Utils.CalculateCentroid(_points);
+    }
+
+    /// <summary>
+    /// Deserializes object
+    /// </summary>
+    public void Read(BinaryReader reader)
+    {
+        int numPoints = reader.ReadInt32();
+        _points = new Point[numPoints];
+        for (int i = 0; i < numPoints; i++)
+        {
+            _points[i].Read(reader);
+        }
+        _isNull = false;
+    }
+
+    /// <summary>
+    /// Serializes object
+    /// </summary>
+    public void Write(BinaryWriter writer)
+    {
+        writer.Write(_points.Length);
+        foreach (Point p in _points)
+        {
+            p.Write(writer);
+        }
+    }
+
+    /// <summary>
+    /// Checks if any edge in edges intersect any other edge
+    /// </summary>
+    /// <param name="edges">An array of edges</param>
+    /// <returns>true if any two edges in array intersects; false otherwise</returns>
+    private static bool DoesEdgesIntersect(Line[] edges)
     {
         if(edges == null || edges.Length < 1)  return false;
 
@@ -181,32 +273,6 @@ public struct Polygon : INullable, IBinarySerialize
         return false;
     }
 
-    public Point GetCentroid() 
-    {
-        if (IsNull) { return Point.Null; }
-
-        return Utils.CalculateCentroid(_points);
-    }
-
-    public void Read(BinaryReader reader)
-    {
-        int numPoints = reader.ReadInt32();
-        _points = new Point[numPoints];
-        for (int i = 0; i < numPoints; i++)
-        {
-            _points[i].Read(reader);
-        }
-        _isNull = false;
-    }
-
-    public void Write(BinaryWriter writer)
-    {
-        writer.Write(_points.Length);
-        foreach (Point p in _points)
-        {
-            p.Write(writer);
-        }
-    }
     private Point[] _points;
     private bool _isNull;
 }

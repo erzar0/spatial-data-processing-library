@@ -3,17 +3,22 @@ using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
 using Microsoft.SqlServer.Server;
 using System.Linq;
-using System.Reflection;
 
-
+/// <summary>
+/// Represents a set of points.
+/// </summary>
 [Serializable]
 [SqlUserDefinedType(Format.UserDefined, MaxByteSize = -1, IsByteOrdered = false)]
 [StructLayout(LayoutKind.Sequential)]
 public struct PointSet: INullable, IBinarySerialize
 {
+    /// <summary>
+    /// Initializes a new instance of the PointSet struct with the specified points.
+    /// </summary>
+    /// <param name="points">The array of points.</param>
+    /// <returns>A new instance of PointSet.</returns>
     public PointSet(Point[] points)
     {
         if (points == null || points.Length < 1 )
@@ -27,6 +32,11 @@ public struct PointSet: INullable, IBinarySerialize
         }
     }
 
+    /// <summary>
+    /// Initializes a new instance of the PointSet struct with the points of the specified Polygon.
+    /// </summary>
+    /// <param name="p">The Polygon to retrieve the points from.</param>
+    /// <returns>New PointSet instance.</returns>
     public PointSet(Polygon p)
     {
         if(p.IsNull)
@@ -43,6 +53,12 @@ public struct PointSet: INullable, IBinarySerialize
     }
 
 
+    /// <summary>
+    /// Parses a string representation of a PointSet and creates a new instance of the PointSet struct.
+    /// </summary>
+    /// <param name="s">The string representation of the PointSet.</param>
+    /// <returns>A new instance of the PointSet struct parsed from the input string. 
+    /// Returns PointSet.Null if the input string is null or empty.</returns>
     [SqlMethod(OnNullCall = false)]
     public static PointSet Parse(SqlString s)
     {
@@ -50,6 +66,12 @@ public struct PointSet: INullable, IBinarySerialize
 
         return new PointSet(Utils.SqlStringToPointsArray(s));
     }
+
+    /// <summary>
+    /// Returns a string representation of the PointSet.
+    /// </summary>
+    /// <returns>A string representation of the PointSet. 
+    /// Returns "NULL" if the PointSet is null.</returns>
     public override string ToString()
     {
         if (IsNull) { return "NULL"; }
@@ -57,6 +79,9 @@ public struct PointSet: INullable, IBinarySerialize
         return Utils.PointsArrayToString(_points);
     }
 
+    /// <summary>
+    /// Gets the null instance of the PointSet.
+    /// </summary
     public static PointSet Null
     {
         get
@@ -66,16 +91,28 @@ public struct PointSet: INullable, IBinarySerialize
             return p;
         }
     }
+
+    /// <summary>
+    /// Gets a value indicating whether the PointSet is null.
+    /// </summary>
     public bool IsNull
     {
         get { return _isNull; }
     }
 
+    /// <summary>
+    /// Gets an array of points in the PointSet.
+    /// </summary>
     public Point[] Points { get { return _points; } }
 
+    /// <summary>
+    /// Finds the convex hull of points in the PointSet. 
+    /// Used algorithm can be found here: https://pl.wikipedia.org/wiki/Algorytm_Grahama
+    /// </summary>
+    /// <returns>The convex hull of the PointSet as a Polygon. 
+    /// Returns Polygon.Null if the PointSet is null or contains less than 3 points.</returns>
     public Polygon FindConvexHull()
     {
-        //https://pl.wikipedia.org/wiki/Algorytm_Grahama
         if (IsNull || _points.Length < 3) { return Polygon.Null;  }
 
         Point anchor = _points.OrderBy(p => p.Y).ThenBy(p => p.X).First();
@@ -102,12 +139,19 @@ public struct PointSet: INullable, IBinarySerialize
     }
 
 
+    /// <summary>
+    /// Calculates centroid of points in PointSet.
+    /// </summary>
+    /// <returns>Point representing centroid of PointSet</returns>
     public Point GetCentroid() {
         if(IsNull || _points.Length < 1) { return  Point.Null; }
         return Utils.CalculateCentroid(_points);
     }
 
 
+    /// <summary>
+    /// Deserializes object
+    /// </summary>
     public void Read(BinaryReader reader)
     {
         int numPoints = reader.ReadInt32();
@@ -119,6 +163,9 @@ public struct PointSet: INullable, IBinarySerialize
         _isNull = false;
     }
     
+    /// <summary>
+    /// Serializes object
+    /// </summary>
     public void Write(BinaryWriter writer)
     {
         writer.Write(_points.Length);
@@ -127,6 +174,7 @@ public struct PointSet: INullable, IBinarySerialize
             p.Write(writer);
         }
     }
+
     private Point[] _points;
     private bool _isNull;
 }

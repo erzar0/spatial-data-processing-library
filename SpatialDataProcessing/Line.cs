@@ -1,15 +1,20 @@
 using System;
-using System.ComponentModel.Design;
-using System.Data;
-using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using Microsoft.SqlServer.Server;
 
 
+/// <summary>
+/// Represents a line segment defined by two points.
+/// </summary>
 [Serializable]
 [SqlUserDefinedType(Format.Native)]
 public struct Line : INullable
 {
+    /// <summary>
+    /// Initializes a new instance of the Line struct.
+    /// </summary>
+    /// <param name="a">The first point defining the line.</param>
+    /// <param name="b">The second point defining the line.</param>
     public Line(Point a, Point b)
     {
         _a = a;
@@ -17,6 +22,11 @@ public struct Line : INullable
         _isNull = false;
     }
 
+    /// <summary>
+    /// Parses a string representation of a Line object.
+    /// </summary>
+    /// <param name="s">The string representation of the Line object.</param>
+    /// <returns>A Line object parsed from the input string. Returns Null if the input is null or empty.</returns>
     [SqlMethod(OnNullCall = false)]
     public static Line Parse(SqlString s)
     {
@@ -28,6 +38,11 @@ public struct Line : INullable
         Point b = Point.Parse(points[1]);
         return new Line(a, b);
     }
+
+    /// <summary>
+    /// Returns a string representation of the Line object.
+    /// </summary>
+    /// <returns>A string representation of the Line object. Returns "NULL" if the line is null.</returns>
     public override string ToString()
     {
         if (IsNull) { return "NULL"; }
@@ -35,11 +50,17 @@ public struct Line : INullable
         return $"({_a},{_b})";
     }
 
+    /// <summary>
+    /// Gets a value indicating whether the Line object is null.
+    /// </summary>
     public bool IsNull
     {
         get { return _isNull; }
     }
 
+    /// <summary>
+    /// Gets a null Line object.
+    /// </summary>
     public static Line Null
     {
         get
@@ -50,16 +71,28 @@ public struct Line : INullable
         }
     }
 
+    /// <summary>
+    /// Gets or sets the first point of the Line.
+    /// </summary>
     public Point A
     {
         get { return _a; }
         set { _a = value; }
     }
+
+    /// <summary>
+    /// Gets or sets the second point of the Line.
+    /// </summary>
     public Point B
     {
         get { return _b; }
         set { _b = value; }
     }
+
+    /// <summary>
+    /// Calculates the length of the Line.
+    /// </summary>
+    /// <returns>The length of the Line. Returns Null if the Line is null.</returns>
     public SqlDouble Length()
     {
         if (IsNull)
@@ -70,6 +103,13 @@ public struct Line : INullable
         return _a.DistanceTo(_b);
     }
 
+    /// <summary>
+    /// Checks if the Line contains the specified point within a given tolerance. 
+    /// Points lying on the end of line are not includes.
+    /// </summary>
+    /// <param name="point">The point to check.</param>
+    /// <param name="eps">The tolerance value.</param>
+    /// <returns>true if the Line contains the point within the specified tolerance, false otherwise.</returns>
     public SqlBoolean ContainsPoint(Point point, SqlDouble eps)
     {
         if (IsNull) { return SqlBoolean.False; }
@@ -100,6 +140,11 @@ public struct Line : INullable
         return distance <= (double) 2 * eps;
     }
 
+    /// <summary>
+    /// Checks if the Line intersects with another Line.
+    /// </summary>
+    /// <param name="another">The other Line to check for intersection.</param>
+    /// <returns>true if the Lines intersect, false otherwise. Returns false if either Line is null.</returns>
     public SqlBoolean Intersects(Line another)
     {
         if (IsNull || another.IsNull)
@@ -122,9 +167,15 @@ public struct Line : INullable
     }
 
 
+    /// <summary>
+    /// Calculates the intersection point of the Line with another Line.
+    /// </summary>
+    /// <param name="another">The other Line to find the intersection point with.</param>
+    /// <returns>The intersection point of the Lines. 
+    /// Returns Point.Null if either Line is null or they do not intersect.</returns>
     public Point GetIntersection(Line another)
     {
-        if (IsNull || another.IsNull)
+        if (IsNull || another.IsNull || !Intersects(another) )
         {
             return Point.Null;
         }
@@ -143,6 +194,10 @@ public struct Line : INullable
 
     }
 
+    /// <summary>
+    /// Calculates the slope of the Line.
+    /// </summary>
+    /// <returns>The slope of the Line. Returns SqlDouble.Null if the Line is null.</returns>
     private SqlDouble GetSlopeValue()
     {
         if(IsNull) { return SqlDouble.Null; }
@@ -152,14 +207,16 @@ public struct Line : INullable
         return dY / dX;
     }
 
+    /// <summary>
+    /// Calculates the intercept of the Line.
+    /// </summary>
+    /// <returns>The intercept of the Line. Returns SqlDouble.Null if the Line is null.</returns>
     private SqlDouble GetInterceptValue()
     {
         if(IsNull) { return SqlDouble.Null; }
         
         return _a.Y - GetSlopeValue() * _a.X;
     }
-
-
 
     private Point _a;
     private Point _b;
