@@ -78,6 +78,7 @@ namespace TestSpatialDataProcessing
         [DataRow("((0 0), (1 1))", "((0 1), (1 1.00000001))", false)]
         [DataRow("((0 0), (1 1))", "((0 1), (1 0.99999999))", true)]
         [DataRow("((1 1), (1 0))", "((0 0), (2 1))", true)]
+        [DataRow("((0 0), (1 1))", "((1 0), (0 1))", true)]
         public void   Intersects_ValidInput_ReturnsExpectedValue(string str1, string str2, bool expected)
         {
             var line = Line.Parse(str1);
@@ -87,6 +88,52 @@ namespace TestSpatialDataProcessing
 
             Assert.AreEqual((bool)line.Intersects(line2), expected);
             Assert.AreEqual((bool)line2.Intersects(line), expected);
+        }
+
+        [TestMethod]
+        public void GetSlopeValue_NullLine_ReturnsNull()
+        {
+            Line line = Line.Null;
+            SqlDouble slope = line.GetSlopeValue();
+            Assert.IsTrue(slope.IsNull);
+        }
+
+        [TestMethod]
+        public void GetSlopeValue_ValidLine_ReturnsPositiveSlope()
+        {
+            Point a = new Point(1, 1);
+            Point b = new Point(3, 5);
+            Line line = new Line(a, b);
+            SqlDouble slope = line.GetSlopeValue();
+            Assert.AreEqual(2, slope.Value);
+        }
+
+        [TestMethod]
+        public void GetSlopeValue_ValidLine_ReturnsNegativeSlope()
+        {
+            Point a = new Point(-1, 1);
+            Point b = new Point(1, -1);
+            Line line = new Line(a, b);
+            SqlDouble slope = line.GetSlopeValue();
+            Assert.AreEqual(-1, slope.Value);
+        }
+
+        [TestMethod]
+        public void GetInterceptValue_NullLine_ReturnsNull()
+        {
+            Line line = Line.Null;
+            SqlDouble intercept = line.GetInterceptValue();
+            Assert.IsTrue(intercept.IsNull);
+        }
+
+        [TestMethod]
+        public void GetInterceptValue_ValidLine_ReturnsIntercept()
+        {
+            Point a = new Point(1, 1);
+            Point b = new Point(3, 5);
+            Line line = new Line(a, b);
+            SqlDouble intercept = line.GetInterceptValue();
+            Assert.AreEqual(-1, intercept.Value);
         }
     }
 }

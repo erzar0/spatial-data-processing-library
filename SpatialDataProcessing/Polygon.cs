@@ -129,7 +129,7 @@ public struct Polygon : INullable, IBinarySerialize
             partial = (double) ((a.X + b.X) * (a.Y - b.Y));
             area += partial;
         }
-        partial = (double) ((_points[i-1].X - _points[0].X) * (_points[i-1].Y - _points[0].Y));
+        area += (double) ((_points[i-1].X - _points[0].X) * (_points[i-1].Y - _points[0].Y));
         return area/2;
     }
 
@@ -264,6 +264,9 @@ public struct Polygon : INullable, IBinarySerialize
         {
             for(int j = i+1; j < edges.Length; j++ )
             {
+                Console.WriteLine(edges[j].ToString()
+                    + edges[i].ToString()
+                    + edges[i].Intersects(edges[j])); 
                 if (edges[i].Intersects(edges[j]))
                 {
                     return true;

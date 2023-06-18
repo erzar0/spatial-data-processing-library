@@ -135,34 +135,12 @@ public struct Point : INullable, IBinarySerialize
         => p + (-another);
 
     /// <summary>
-    /// Determines whether two Point objects are equal.
-    /// </summary>
-    /// <param name="p">The first Point object.</param>
-    /// <param name="another">The second Point object.</param>
-    /// <returns>true if the two points are equal; otherwise, false.</returns>
-    public static bool operator ==(Point p, Point another)
-    {
-        return (bool)( p.X == another.X && p.Y == another.Y);
-    }
-
-    /// <summary>
-    /// Determines whether two Point objects are not equal.
-    /// </summary>
-    /// <param name="p">The first Point object.</param>
-    /// <param name="another">The second Point object.</param>
-    /// <returns>true if the two points are not equal; otherwise, false.</returns>
-    public static bool operator !=(Point p, Point another)
-    {
-        return !(p==another);
-    }
-
-    /// <summary>
     /// Multiplies a Point object by a scale factor.
     /// </summary>
     /// <param name="p">The Point object to be multiplied.</param>
     /// <param name="scale">The scale factor.</param>
     /// <returns>A new Point object with scaled coordinates.</returns>
-    public static Point operator *(Point p, double scale)
+    public static Point operator *(Point p, SqlDouble scale)
     {
         return new Point(p.X * scale, p.Y * scale);
     }
@@ -173,7 +151,7 @@ public struct Point : INullable, IBinarySerialize
     /// <param name="p">The Point object to be divided.</param>
     /// <param name="scale">The scale factor.</param>
     /// <returns>A new Point object with divided coordinates.</returns>
-    public static Point operator /(Point p, double scale)
+    public static Point operator /(Point p, SqlDouble scale)
     {
         return new Point(p.X / scale, p.Y / scale);
     }
@@ -192,18 +170,6 @@ public struct Point : INullable, IBinarySerialize
 
         return Math.Sqrt(Math.Pow((double)(X - p2.X), 2) + Math.Pow((double)(Y - p2.Y), 2));
     }
-
-    /// <summary>
-    /// Calculates the polar angle of the point.
-    /// </summary>
-    /// <returns>The polar angle of the point in radians. Returns 0 if the point is null.</returns>
-    public double PolarAngle()
-    {
-        if (IsNull) { return 0; }
-
-        return Math.Atan2(_y, _x);
-    }
-
 
     /// <summary>
     /// Serializes object
@@ -229,6 +195,17 @@ public struct Point : INullable, IBinarySerialize
             _x = r.ReadDouble();
             _y = r.ReadDouble();
         }
+    }
+
+    /// <summary>
+    /// Calculates the polar angle of the point.
+    /// </summary>
+    /// <returns>The polar angle of the point in radians. Returns 0 if the point is null.</returns>
+    public double PolarAngle()
+    {
+        if (IsNull) { return 0; }
+
+        return Math.Atan2(_y, _x);
     }
 
     private double _x;

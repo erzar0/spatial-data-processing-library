@@ -15,6 +15,10 @@ public class Utils
     /// <returns>A string representation of the points in the format "((x1, y1), (x2, y2), ..., (xn, yn))".</returns>
     public static string PointsArrayToString(Point[] ps)
     {
+        if(ps == null || ps.Length == 0)
+        {
+            return "";
+        }
 
         StringBuilder sb = new StringBuilder();
         sb.Append("(");
@@ -36,7 +40,7 @@ public class Utils
     /// <returns>An array of Point objects parsed from the input string. Returns null if the input string is null or empty.</returns>
     public static Point[] SqlStringToPointsArray(SqlString s)
     {
-        if (s.IsNull == null || s.ToString().Trim() == "") { return null; }
+        if (s.IsNull || s.ToString().Trim() == "") { return null; }
 
         string[] points = System.Text.RegularExpressions.Regex.Split(
                         s.ToString().Replace('\n', ' ').Trim('(', ')', ' '), @"\s*,\s*");
@@ -56,6 +60,7 @@ public class Utils
     /// <returns>The centroid of the points.</returns>
     public static Point CalculateCentroid(Point[] points)
     {
+        if(points == null || points.Length == 0) { return Point.Null; }
         return points.Aggregate(new Point(0, 0), (prev, curr) => prev + curr, (acc) => acc / points.Length);
     }
 

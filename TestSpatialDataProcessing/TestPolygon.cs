@@ -138,7 +138,7 @@ namespace TestSpatialDataProcessing {
         [TestMethod]
         public void ParseEdges_InvalidInput_ReturnsNull()
         {
-            CollectionAssert.AreEqual(Polygon.ParseEdges(new Point[] {}), null);
+            CollectionAssert.AreEqual(Polygon.ParseEdges(Array.Empty<Point>()), null);
         }
 
         [TestMethod]

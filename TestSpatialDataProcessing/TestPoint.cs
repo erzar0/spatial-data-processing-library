@@ -18,9 +18,9 @@ namespace TestSpatialDataProcessing
             var point = new Point(1, 2);
             var copiedPoint = new Point(point);
 
-            Assert.IsTrue(copiedPoint == point);
+            Assert.IsTrue(copiedPoint.Equals(point));
             copiedPoint.X = 3;
-            Assert.IsFalse(copiedPoint == point);
+            Assert.IsFalse(copiedPoint.Equals(point));
         }
 
         [TestMethod]
@@ -29,7 +29,7 @@ namespace TestSpatialDataProcessing
             Point p1 = new Point(1, 1);
             Point p2 = +p1;
             p1.X = 0;
-            Assert.IsTrue((bool)(p1 != p2));
+            Assert.IsFalse(p1.Equals(p2));
         }
 
         [TestMethod]
@@ -47,7 +47,7 @@ namespace TestSpatialDataProcessing
             Point p2 = new Point(2, 2);
             Point p3 = p1 + p2;
             Point p4 = new Point(3, 3);
-            Assert.IsTrue(p3 == p4);
+            Assert.IsTrue(p3.Equals(p4));
         }
 
         [TestMethod]
@@ -57,7 +57,7 @@ namespace TestSpatialDataProcessing
             Point p2 = new Point(2, 2);
             Point p3 = p1 - p2;
             Point p4 = new Point(-1, -1);
-            Assert.IsTrue(p3 == p4);
+            Assert.IsTrue(p3.Equals(p4));
         }
 
         [TestMethod]
@@ -66,8 +66,8 @@ namespace TestSpatialDataProcessing
             Point p1 = new Point(1, 1);
             Point p2 = new Point(1, 1);
             Point p3 = new Point(1, 1.000000001);
-            Assert.IsTrue(p1 == p2);
-            Assert.IsTrue(p1 != p3);
+            Assert.IsTrue(p1.Equals(p2));
+            Assert.IsFalse(p1.Equals(p3));
         }
 
         [TestMethod]
@@ -76,7 +76,7 @@ namespace TestSpatialDataProcessing
             Point p1 = new Point(1, 1);
             Point p2 = p1 * 2;
             Point p3 = new Point(2, 2);
-            Assert.IsTrue(p2 == p3);
+            Assert.IsTrue(p2.Equals(p3));
         }
 
         [TestMethod]
@@ -85,7 +85,7 @@ namespace TestSpatialDataProcessing
             Point p1 = new Point(2, 2);
             Point p2 = p1 / 2;
             Point p3 = new Point(1, 1);
-            Assert.IsTrue(p2 == p3);
+            Assert.IsTrue(p2.Equals(p3));
         }
 
         [TestMethod]

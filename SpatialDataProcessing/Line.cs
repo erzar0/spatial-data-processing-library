@@ -136,8 +136,7 @@ public struct Line : INullable
         SqlDouble m = GetSlopeValue();
         SqlDouble c = GetInterceptValue();
         double distance = Math.Abs((double) (point.Y - (m * point.X + c)));
-        Console.WriteLine(distance);
-        return distance <= (double) 2 * eps;
+        return distance <= 2 * eps;
     }
 
     /// <summary>
@@ -175,7 +174,7 @@ public struct Line : INullable
     /// Returns Point.Null if either Line is null or they do not intersect.</returns>
     public Point GetIntersection(Line another)
     {
-        if (IsNull || another.IsNull || !Intersects(another) )
+        if (IsNull || another.IsNull )
         {
             return Point.Null;
         }
@@ -198,12 +197,23 @@ public struct Line : INullable
     /// Calculates the slope of the Line.
     /// </summary>
     /// <returns>The slope of the Line. Returns SqlDouble.Null if the Line is null.</returns>
-    private SqlDouble GetSlopeValue()
+    public SqlDouble GetSlopeValue()
     {
         if(IsNull) { return SqlDouble.Null; }
 
         double dY = (double) (_b.Y - _a.Y);
-        double dX = Math.Max((double) (_b.X - _a.X), 1e-12);
+        double dX = (double) (_b.X - _a.X);
+        if(dX < 1e-12 && dX > -1e-12 )
+        {
+            if(dX < 0)
+            {
+                dX = -1e-12;
+            }
+            else
+            {
+                dX = 1e-12;
+            }
+        }
         return dY / dX;
     }
 
@@ -211,7 +221,7 @@ public struct Line : INullable
     /// Calculates the intercept of the Line.
     /// </summary>
     /// <returns>The intercept of the Line. Returns SqlDouble.Null if the Line is null.</returns>
-    private SqlDouble GetInterceptValue()
+    public SqlDouble GetInterceptValue()
     {
         if(IsNull) { return SqlDouble.Null; }
         
