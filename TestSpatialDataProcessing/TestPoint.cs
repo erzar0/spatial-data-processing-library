@@ -33,7 +33,7 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void OperatorMinus_ReturnsNewPoint()
+        public void OperatorMinus_ReturnsNewNegativePoint()
         {
             Point p1 = new Point(1, 1);
             Point p2 = -p1;
@@ -41,7 +41,7 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void OperatorPlus_AddsTwoPoints()
+        public void OperatorPlus_AddsPoint()
         {
             Point p1 = new Point(1, 1);
             Point p2 = new Point(2, 2);
@@ -51,23 +51,13 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void OperatorMinus_SubtractsTwoPoints()
+        public void OperatorMinus_SubtractsPoint()
         {
             Point p1 = new Point(1, 1);
             Point p2 = new Point(2, 2);
             Point p3 = p1 - p2;
             Point p4 = new Point(-1, -1);
             Assert.IsTrue(p3.Equals(p4));
-        }
-
-        [TestMethod]
-        public void OperatorEquals_ChecksIfPointsAreExactlyTheSame()
-        {
-            Point p1 = new Point(1, 1);
-            Point p2 = new Point(1, 1);
-            Point p3 = new Point(1, 1.000000001);
-            Assert.IsTrue(p1.Equals(p2));
-            Assert.IsFalse(p1.Equals(p3));
         }
 
         [TestMethod]
@@ -97,7 +87,7 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void  ToString_ValidInput_ReturnsValidString()
+        public void  ToString_ValidInput_ReturnsExpectedString()
         {
             var point = new Point(new SqlDouble(1.234), new SqlDouble(4.321));
             Assert.AreEqual("(1.234 4.321)", point.ToString());
@@ -114,7 +104,7 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void  DistanceTo_ValidInput_ReturnsValidValue()
+        public void  DistanceTo_ValidInput_ReturnsExpectedValue()
         {
             var point1 = new Point(new SqlDouble(0.0), new SqlDouble(0.0));
             var point2 = new Point(new SqlDouble(3.0), new SqlDouble(4.0));

@@ -71,10 +71,10 @@ public struct PointSet: INullable, IBinarySerialize
     /// Returns a string representation of the PointSet.
     /// </summary>
     /// <returns>A string representation of the PointSet. 
-    /// Returns "NULL" if the PointSet is null.</returns>
+    /// Returns "" if the PointSet is null.</returns>
     public override string ToString()
     {
-        if (IsNull) { return "NULL"; }
+        if (IsNull) { return ""; }
 
         return Utils.PointsArrayToString(_points);
     }
@@ -109,11 +109,13 @@ public struct PointSet: INullable, IBinarySerialize
     /// Finds the convex hull of points in the PointSet. 
     /// Used algorithm can be found here: https://pl.wikipedia.org/wiki/Algorytm_Grahama
     /// </summary>
-    /// <returns>The convex hull of the PointSet as a Polygon. 
-    /// Returns Polygon.Null if the PointSet is null or contains less than 3 points.</returns>
-    public Polygon FindConvexHull()
+    /// <returns>
+    /// The convex hull of the PointSet as a Polygon. 
+    /// Returns Polygon.Null if the PointSet is null or contains less than 3 points.
+    /// </returns>
+    public PointSet FindConvexHull()
     {
-        if (IsNull || _points.Length < 3) { return Polygon.Null;  }
+        if (IsNull || _points.Length < 3) { return PointSet.Null;  }
 
         Point anchor = _points.OrderBy(p => p.Y).ThenBy(p => p.X).First();
         Point[] sortedPoints = _points.OrderBy(p => (p - anchor).PolarAngle()).ToArray();
@@ -135,7 +137,28 @@ public struct PointSet: INullable, IBinarySerialize
             stack.Push(sortedPoints[i]);
         }
 
-        return new Polygon(stack.ToArray());
+        return new PointSet(stack.ToArray());
+    }
+
+    /// <summary>
+    /// Checks if point is in PointSet with eps accuracy
+    /// </summary>
+    /// <returns>
+    /// True if distance between passed point and any point in PointSet is less than eps; 
+    /// false otherwise 
+    /// </returns>
+    public SqlBoolean ContainsPoint(Point point, double eps)
+    {
+        if(point.IsNull) { return SqlBoolean.False; }
+
+        foreach(Point p in _points)
+        {
+            if(point.DistanceTo(p) <= eps)
+            {
+                return SqlBoolean.True;
+            }
+        }
+        return SqlBoolean.False;
     }
 
 

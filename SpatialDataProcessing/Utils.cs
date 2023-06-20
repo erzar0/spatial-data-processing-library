@@ -81,8 +81,10 @@ public class Utils
         //(pq.cross(qr))
         double crossProduct = (double) ((q.Y - p.Y) * (r.X - q.X) - (q.X - p.X) * (r.Y - q.Y));
 
-        if(Math.Abs(crossProduct) < 1e-12) { return ORIENTATION.COLLINEAR; }
+        if(Math.Abs(crossProduct) < Utils.EPSILON) { return ORIENTATION.COLLINEAR; }
         return crossProduct > 0 ? ORIENTATION.CLOCKWISE : ORIENTATION.COUNTERCLOCKWISE; 
     }
+
+    public static readonly double EPSILON = 1e-12;
 
 }

@@ -5,10 +5,10 @@
 namespace TestSpatialDataProcessing
 {
     [TestClass]
-    public class LineTests
+    public class TestLine
     {
         [TestMethod]
-        public void   Parse_ValidInput_ReturnsValidObject()
+        public void   Parse_ValidInput_ReturnsExpectedObject()
         {
             var line = Line.Parse(new SqlString(@" ( ( 1 2 )
                                                 , ( 3 4 )   )"));
@@ -24,14 +24,14 @@ namespace TestSpatialDataProcessing
         }
 
         [TestMethod]
-        public void   ToString_NullInput_ReturnsNullString()
+        public void   ToString_NullInput_ReturnsEmptyString()
         {
             var line = Line.Null;
-            Assert.AreEqual(line.ToString(), "NULL");
+            Assert.AreEqual(line.ToString(), "");
         }
 
         [TestMethod]
-        public void   Length_NullObject_ReturnsNullValue()
+        public void   Length_NullObject_ReturnsNullObject()
         {
             var line = Line.Null;
             Assert.AreEqual(line.Length().IsNull, true);

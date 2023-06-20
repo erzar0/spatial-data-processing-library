@@ -37,6 +37,8 @@ public struct Polygon : INullable, IBinarySerialize
         _isNull = false;
     }
 
+    public Polygon(PointSet ps): this(ps.Points) { }
+
     /// <summary>
     /// Parses a string representation of a Polygon and returns a new instance.
     /// </summary>
@@ -56,7 +58,7 @@ public struct Polygon : INullable, IBinarySerialize
     /// <returns>A string representation of the Polygon.</returns>
     public override string ToString()
     {
-        if (IsNull) { return "NULL"; }
+        if (IsNull) { return ""; }
 
         return Utils.PointsArrayToString(_points);
     }
@@ -264,9 +266,6 @@ public struct Polygon : INullable, IBinarySerialize
         {
             for(int j = i+1; j < edges.Length; j++ )
             {
-                Console.WriteLine(edges[j].ToString()
-                    + edges[i].ToString()
-                    + edges[i].Intersects(edges[j])); 
                 if (edges[i].Intersects(edges[j]))
                 {
                     return true;

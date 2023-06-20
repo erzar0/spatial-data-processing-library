@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "SpatialDataProcessing", "SpatialDataProcessing\SpatialDataProcessing.sqlproj", "{3A5E38F1-C9B3-4D1F-9B30-9B3E9D2DDB71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSpatialDataProcessing", "TestSpatialDataProcessing\TestSpatialDataProcessing.csproj", "{B7F77583-8587-41B3-8D39-712E919C2A0F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestSpatialDataProcessing", "TestSpatialDataProcessing\TestSpatialDataProcessing.csproj", "{B7F77583-8587-41B3-8D39-712E919C2A0F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -42,10 +42,10 @@ public struct Line : INullable
     /// <summary>
     /// Returns a string representation of the Line object.
     /// </summary>
-    /// <returns>A string representation of the Line object. Returns "NULL" if the line is null.</returns>
+    /// <returns>A string representation of the Line object. Returns "" if the line is null.</returns>
     public override string ToString()
     {
-        if (IsNull) { return "NULL"; }
+        if (IsNull) { return ""; }
 
         return $"({_a},{_b})";
     }
@@ -156,11 +156,11 @@ public struct Line : INullable
         Utils.ORIENTATION o3 = Utils.Orientation(another.A, another.B, A);
         Utils.ORIENTATION o4 = Utils.Orientation(another.A, another.B, B);
 
-        if (o1 != o2 && o3 != o4 && ContainsPoint(GetIntersection(another), 1e-12)) return true;
-        if (o1 == Utils.ORIENTATION.COLLINEAR && ContainsPoint(another.A, 1e-12)) return true;
-        if (o2 == Utils.ORIENTATION.COLLINEAR && ContainsPoint(another.B, 1e-12)) return true;
-        if (o3 == Utils.ORIENTATION.COLLINEAR && another.ContainsPoint(A, 1e-12)) return true;
-        if (o4 == Utils.ORIENTATION.COLLINEAR && another.ContainsPoint(B, 1e-12)) return true;
+        if (o1 != o2 && o3 != o4 && ContainsPoint(GetIntersection(another), Utils.EPSILON)) return true;
+        if (o1 == Utils.ORIENTATION.COLLINEAR && ContainsPoint(another.A, Utils.EPSILON)) return true;
+        if (o2 == Utils.ORIENTATION.COLLINEAR && ContainsPoint(another.B, Utils.EPSILON)) return true;
+        if (o3 == Utils.ORIENTATION.COLLINEAR && another.ContainsPoint(A, Utils.EPSILON)) return true;
+        if (o4 == Utils.ORIENTATION.COLLINEAR && another.ContainsPoint(B, Utils.EPSILON)) return true;
 
         return SqlBoolean.False;
     }
@@ -184,7 +184,7 @@ public struct Line : INullable
         double c2 = (double) another.GetInterceptValue();
 
         double dm = m1 - m2;
-        dm = dm > 0 ? Math.Max(dm, 1e-12) : Math.Min(dm, -1e-12); 
+        dm = dm > 0 ? Math.Max(dm, Utils.EPSILON) : Math.Min(dm, -Utils.EPSILON); 
         double dc = c2 - c1;
 
         double x = dc / dm;
@@ -203,15 +203,15 @@ public struct Line : INullable
 
         double dY = (double) (_b.Y - _a.Y);
         double dX = (double) (_b.X - _a.X);
-        if(dX < 1e-12 && dX > -1e-12 )
+        if(dX < Utils.EPSILON && dX > -Utils.EPSILON )
         {
             if(dX < 0)
             {
-                dX = -1e-12;
+                dX = -Utils.EPSILON;
             }
             else
             {
-                dX = 1e-12;
+                dX = Utils.EPSILON;
             }
         }
         return dY / dX;
@@ -226,6 +226,18 @@ public struct Line : INullable
         if(IsNull) { return SqlDouble.Null; }
         
         return _a.Y - GetSlopeValue() * _a.X;
+    }
+
+
+    /// <summary>
+    /// Calculates center of Line
+    /// </summary>
+    /// <returns>Point instance representing center of Line</returns>
+    public Point GetCentroid() 
+    {
+        if (IsNull) { return Point.Null; }
+
+        return Utils.CalculateCentroid(new Point[]{ _a, _b});
     }
 
     private Point _a;

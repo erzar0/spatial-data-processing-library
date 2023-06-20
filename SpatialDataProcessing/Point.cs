@@ -58,7 +58,7 @@ public struct Point : INullable, IBinarySerialize
     /// <returns>A string representation of the Point object in the format "(X Y)".</returns>
     public override string ToString()
     {
-        if (IsNull) { return "NULL"; }
+        if (IsNull) { return ""; }
 
         return $"({_x.ToString().Replace(",", ".")} {_y.ToString().Replace(",", ".")})";
     }

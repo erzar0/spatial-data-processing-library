@@ -1,6 +1,4 @@
 ﻿using System.Data.SqlTypes;
-using System.Runtime.InteropServices;
-using System.Timers;
 
 namespace TestSpatialDataProcessing
 {
@@ -96,13 +94,13 @@ namespace TestSpatialDataProcessing
 
             var result = pointSet.ToString();
 
-            Assert.AreEqual("NULL", result);
+            Assert.AreEqual("", result);
         }
 
         [TestMethod]
         public void  FindConvexHull_NullInput_ReturnsNullPolygon()
         {
-            Assert.AreEqual(new PointSet(null).FindConvexHull(), Polygon.Null);
+            Assert.AreEqual(new PointSet(null).FindConvexHull(), PointSet.Null);
         }
 
         [TestMethod]
@@ -127,6 +125,35 @@ namespace TestSpatialDataProcessing
 
             pointset.FindConvexHull().Points.ToList().ForEach(e => Console.WriteLine(e));
             CollectionAssert.AreEquivalent(pointset.FindConvexHull().Points, convexHullPoints);
+        }
+
+        [TestMethod]
+        public void ContainsPoint_ShouldReturnTrue_WhenPointIsInPointSet()
+        {
+            PointSet pointSet = new PointSet(new Point[] {  new Point(1, 1),
+                                                            new Point(2, 2),
+                                                            new Point(3, 3)});
+            Point point = new Point(3, 3.1);
+            double eps = 0.10001;
+
+            bool result = (bool) pointSet.ContainsPoint(point, eps);
+
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        public void ContainsPoint_ReturnFalse_WhenPointIsNotInPointSet()
+        {
+            PointSet pointSet = new PointSet(new Point[] {  new Point(1, 1),
+                                                            new Point(2, 2),
+                                                            new Point(3, 3)});
+
+            Point point = new Point(5, 5);
+            double eps = 1.99;
+
+            bool result = (bool) pointSet.ContainsPoint(point, eps);
+
+            Assert.IsFalse(result);
         }
 
     }

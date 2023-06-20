@@ -88,7 +88,7 @@ namespace TestSpatialDataProcessing {
 
             var result = polygon.ToString();
 
-            Assert.AreEqual("NULL", result);
+            Assert.AreEqual("", result);
         }
 
         [TestMethod]
@@ -176,7 +176,7 @@ namespace TestSpatialDataProcessing {
         [DataRow(0, -0.1, false)]
         [DataRow(0, 0, false)]
         [DataRow(0, 0.5, false)]
-        [DataRow(10e-10, 10e-10, true)]
+        [DataRow(1e-12, 1e-12, true)]
         public void ContainsPoint_ValidInput_ReturnsExpectedValue(double x, double y, bool expected)
         {
             Polygon polygon = new Polygon(new Point[] { new Point(0, 0), new Point(0, 1), new Point(1, 1), new Point(1, 0) });
@@ -203,11 +203,6 @@ namespace TestSpatialDataProcessing {
             Polygon p = new Polygon(points);
             Line l = Line.Parse(lineStr);
             Assert.AreEqual(p.IntersectsLine(l), expected);
-
-
-
         }
-
-
     } 
 }
